@@ -56,7 +56,7 @@ export default function Home() {
           <div className="group">
             <div className="mb-3 font-mono text-2xl text-accent">01</div>
             <h3 className="mb-2 text-lg font-medium">Build Products</h3>
-            <p className="text-sm leading-relaxed text-text-muted">
+            <p className="text-base leading-relaxed text-text-muted">
               NextJS, React, TypeScript, C#, Ruby on Rails. I build full-stack
               applications from scratch — currently a bespoke CRM handling
               real events and real members.
@@ -65,7 +65,7 @@ export default function Home() {
           <div className="group">
             <div className="mb-3 font-mono text-2xl text-accent">02</div>
             <h3 className="mb-2 text-lg font-medium">Support & Debug</h3>
-            <p className="text-sm leading-relaxed text-text-muted">
+            <p className="text-base leading-relaxed text-text-muted">
               Deep experience in technical support engineering at InfluxData,
               Demandbase, and ScreenCloud. Distributed systems, databases,
               cloud infrastructure — I trace issues through the full stack.
@@ -74,7 +74,7 @@ export default function Home() {
           <div className="group">
             <div className="mb-3 font-mono text-2xl text-accent">03</div>
             <h3 className="mb-2 text-lg font-medium">Bridge the Gap</h3>
-            <p className="text-sm leading-relaxed text-text-muted">
+            <p className="text-base leading-relaxed text-text-muted">
               The rarest skill in tech: understanding both how products are
               built and how customers use them. I turn customer pain into
               product improvements.
@@ -92,7 +92,7 @@ export default function Home() {
           <div className="rounded-lg border border-border-subtle bg-bg-surface p-6">
             <div className="mb-2 font-mono text-xs text-live">● Active</div>
             <h3 className="mb-2 text-lg font-medium">Ceroc CRM</h3>
-            <p className="text-sm leading-relaxed text-text-muted">
+            <p className="text-base leading-relaxed text-text-muted">
               Bespoke event and member management system. NextJS, C#,
               Azure, SQL Server. Claude API integration for intelligent
               data workflows.
@@ -101,7 +101,7 @@ export default function Home() {
           <div className="rounded-lg border border-border-subtle bg-bg-surface p-6">
             <div className="mb-2 font-mono text-xs text-wip">● Building</div>
             <h3 className="mb-2 text-lg font-medium">This Site</h3>
-            <p className="text-sm leading-relaxed text-text-muted">
+            <p className="text-base leading-relaxed text-text-muted">
               A living portfolio of technical experiments and spikes.
               Each one is a real thing I built to learn, not a tutorial
               I followed.
