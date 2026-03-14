@@ -3,13 +3,13 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Fliz Portfolio — Global Orientation Ritual Demo",
+  title: "Jay Greasley — Technical Engineer & Builder",
   description:
-    "A portfolio site centred on the Global Orientation Ritual demo app, alongside technical experiments and product spikes.",
+    "Experiments, spikes, and real production work from a technical support engineer and full-stack developer.",
   openGraph: {
-    title: "Fliz Portfolio — Global Orientation Ritual Demo",
+    title: "Jay Greasley — Technical Engineer & Builder",
     description:
-      "A portfolio site centred on the Global Orientation Ritual demo app, alongside technical experiments and product spikes.",
+      "Experiments, spikes, and real production work from a technical support engineer and full-stack developer.",
     url: "https://fliz.co.uk",
     siteName: "fliz.co.uk",
     type: "website",
