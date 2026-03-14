@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #0a0a0b;
-  --color-bg-surface: #141416;
-  --color-bg-elevated: #1c1c1f;
-  --color-border: #2a2a2e;
-  --color-border-subtle: #1f1f23;
-  --color-text: #e8e6e3;
-  --color-text-muted: #8a8a8d;
-  --color-text-faint: #5a5a5d;
-  --color-accent: #8aad7e;
-  --color-accent-dim: #6e9462;
+  --color-bg: #f2ecdf;
+  --color-bg-surface: rgba(255, 250, 242, 0.82);
+  --color-bg-elevated: #fff9ef;
+  --color-border: rgba(39, 47, 49, 0.18);
+  --color-border-subtle: rgba(39, 47, 49, 0.1);
+  --color-text: #182126;
+  --color-text-muted: #5f6769;
+  --color-text-faint: #8a8f90;
+  --color-accent: #0e5c52;
+  --color-accent-dim: #0a4a42;
   --color-live: #4ade80;
-  --color-wip: #e8a849;
-  --color-planned: #8a8a8d;
+  --color-wip: #bc6c25;
+  --color-planned: #8a8f90;
 
   --font-display: "Playfair Display", Georgia, serif;
   --font-body: "Inter", system-ui, sans-serif;
@@ -21,22 +21,241 @@
 }
 
 @layer base {
+  html {
+    background:
+      radial-gradient(circle at top left, rgba(188, 108, 37, 0.2), transparent 28%),
+      radial-gradient(circle at top right, rgba(14, 92, 82, 0.17), transparent 26%),
+      linear-gradient(180deg, #f6f0e3 0%, #efe6d3 100%);
+  }
+
   body {
     background-color: var(--color-bg);
     color: var(--color-text);
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background:
+      radial-gradient(circle at top left, rgba(188, 108, 37, 0.14), transparent 24%),
+      radial-gradient(circle at top right, rgba(14, 92, 82, 0.16), transparent 22%),
+      linear-gradient(180deg, rgba(247, 241, 229, 0.92) 0%, rgba(239, 231, 212, 0.9) 100%);
   }
 
   ::selection {
     background-color: var(--color-accent);
-    color: var(--color-bg);
+    color: #eff7f4;
+  }
+
+  a {
+    text-decoration: none;
   }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .portfolio-shell {
+    margin-inline: auto;
+    display: grid;
+    max-width: 80rem;
+    gap: 1.5rem;
+    padding: 2rem 1.5rem 5rem;
+  }
+
+  .hero-panel-grid,
+  .portfolio-section-card,
+  .orientation-preview-card,
+  .orientation-demo-card {
+    border: 1px solid var(--color-border-subtle);
+    background: var(--color-bg-surface);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 18px 40px rgba(72, 53, 28, 0.12);
+  }
+
+  .hero-panel-grid {
+    display: grid;
+    gap: 1.5rem;
+    border-radius: 2rem;
+    padding: 1.75rem;
+    background:
+      linear-gradient(135deg, rgba(255, 250, 240, 0.95), rgba(244, 235, 219, 0.84)),
+      var(--color-bg-surface);
+  }
+
+  .hero-panel-copy {
+    display: flex;
+    min-height: 26rem;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .orientation-preview-card,
+  .portfolio-section-card,
+  .orientation-demo-card {
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+  }
+
+  .orientation-preview-card {
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+    background:
+      linear-gradient(180deg, rgba(255, 251, 244, 0.94), rgba(245, 236, 221, 0.78)),
+      var(--color-bg-surface);
+  }
+
+  .orientation-preview-header,
+  .orientation-stat-grid,
+  .portfolio-section-grid,
+  .orientation-demo-grid,
+  .orientation-ui-board {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .orientation-preview-header {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+
+  .orientation-badge,
+  .orientation-pill,
+  .portfolio-tag {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+
+  .orientation-badge {
+    background: rgba(14, 92, 82, 0.12);
+    color: var(--color-accent);
+    padding: 0.5rem 0.75rem;
+  }
+
+  .orientation-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .orientation-stat,
+  .orientation-mini-card,
+  .orientation-ui-column {
+    border-radius: 1.25rem;
+    border: 1px solid var(--color-border-subtle);
+    background: rgba(255, 255, 255, 0.55);
+    padding: 1rem;
+  }
+
+  .orientation-stat strong,
+  .orientation-mini-card strong {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 1.8rem;
+    line-height: 1;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .orientation-mini-card strong {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  .orientation-stat-label,
+  .portfolio-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-faint);
+  }
+
+  .orientation-reading {
+    border-top: 1px solid var(--color-border-subtle);
+    padding-top: 1rem;
+  }
+
+  .orientation-reading p {
+    margin-top: 0.45rem;
+    color: var(--color-text-muted);
+    line-height: 1.8;
+  }
+
+  .orientation-pill,
+  .portfolio-tag {
+    border: 1px solid var(--color-border-subtle);
+    padding: 0.45rem 0.75rem;
+    color: var(--color-text-muted);
+    background: rgba(255, 255, 255, 0.56);
+  }
+
+  .portfolio-section-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .portfolio-section-card-wide {
+    grid-column: span 2 / span 2;
+  }
+
+  .portfolio-section-title {
+    margin: 0.5rem 0 1rem;
+    font-size: clamp(1.75rem, 2vw, 2.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    font-family: var(--font-display);
+  }
+
+  .orientation-demo-surface {
+    border-radius: 2rem;
+    border: 1px solid var(--color-border-subtle);
+    background:
+      linear-gradient(135deg, rgba(255, 250, 240, 0.9), rgba(244, 235, 219, 0.76)),
+      var(--color-bg-surface);
+    padding: 1.5rem;
+    box-shadow: 0 18px 40px rgba(72, 53, 28, 0.12);
+  }
+
+  .orientation-demo-grid {
+    grid-template-columns: 1.2fr 0.8fr;
+  }
+
+  .orientation-ui-board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .orientation-list-row {
+    border-top: 1px solid var(--color-border-subtle);
+    padding-top: 0.9rem;
+    color: var(--color-text-muted);
+    line-height: 1.7;
+  }
+
+  .orientation-list-row:first-child {
+    border-top: 0;
+    padding-top: 0.65rem;
+  }
+
+  @media (max-width: 960px) {
+    .hero-panel-grid,
+    .portfolio-section-grid,
+    .orientation-demo-grid,
+    .orientation-ui-board {
+      grid-template-columns: 1fr;
+    }
+
+    .portfolio-section-card-wide {
+      grid-column: auto;
+    }
+
+    .orientation-stat-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-panel-copy {
+      min-height: auto;
+    }
   }
 }

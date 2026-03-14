@@ -14,6 +14,15 @@ export interface Experiment {
 // Create matching route at src/app/experiments/[slug]/page.tsx for the demo.
 export const experiments: Experiment[] = [
   {
+    slug: "global-orientation-ritual",
+    title: "Global Orientation Ritual",
+    description:
+      "A personal intelligence desk for sorting tactical noise from slower strategic and structural change.",
+    status: "live",
+    tags: ["Next.js", "React", "Prisma", "Signals", "Dashboard"],
+    date: "2026-03-14",
+  },
+  {
     slug: "react-email",
     title: "React Email Templates",
     description:

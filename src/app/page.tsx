@@ -6,143 +6,160 @@ export default function Home() {
   const totalCount = experiments.length;
 
   return (
-    <div className="mx-auto max-w-5xl px-6">
-      {/* Hero */}
-      <section className="flex min-h-[70vh] flex-col justify-center py-20">
-        <p className="mb-4 font-mono text-sm tracking-widest text-accent uppercase">
-          Jay Greasley
-        </p>
-        <h1
-          className="mb-6 text-5xl leading-tight tracking-tight md:text-6xl"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          I build things,
-          <br />
-          then I help people
-          <br />
-          <span className="italic text-text-muted">use them.</span>
-        </h1>
-        <p className="mb-10 max-w-lg text-lg leading-relaxed text-text-muted">
-          Technical support engineer and full-stack developer with 15+ years
-          across startups, government, legal, and enterprise. I learn fast,
-          build pragmatic solutions, and bridge the gap between engineering
-          and customers.
-        </p>
-        <div className="flex items-center gap-4">
-          <Link
-            href="/experiments"
-            className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-bg transition-colors hover:bg-accent-dim"
+    <div className="portfolio-shell">
+      <section className="hero-panel-grid">
+        <div className="hero-panel-copy">
+          <p className="mb-4 font-mono text-sm tracking-[0.28em] text-accent uppercase">
+            Fliz Portfolio / Demo Focus
+          </p>
+          <h1
+            className="max-w-4xl text-5xl leading-[0.96] tracking-tight md:text-7xl"
+            style={{ fontFamily: "var(--font-display)" }}
           >
-            View experiments
-            <span className="font-mono text-xs opacity-70">
-              {liveCount}/{totalCount}
-            </span>
-          </Link>
-          <a
-            href="mailto:jay@fliz.co.uk"
-            className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm text-text-muted transition-colors hover:border-text-muted hover:text-text"
-          >
-            Get in touch
-          </a>
-        </div>
-      </section>
-
-      {/* What I do */}
-      <section className="border-t border-border-subtle py-20">
-        <h2 className="mb-12 font-mono text-xs tracking-widest text-text-faint uppercase">
-          What I bring
-        </h2>
-        <div className="grid gap-8 md:grid-cols-3">
-          <div className="group">
-            <div className="mb-3 font-mono text-2xl text-accent">01</div>
-            <h3 className="mb-2 text-lg font-medium">Build Products</h3>
-            <p className="text-base leading-relaxed text-text-muted">
-              NextJS, React, TypeScript, C#, Ruby on Rails. I build full-stack
-              applications from scratch — currently a bespoke CRM handling
-              real events and real members.
-            </p>
-          </div>
-          <div className="group">
-            <div className="mb-3 font-mono text-2xl text-accent">02</div>
-            <h3 className="mb-2 text-lg font-medium">Support & Debug</h3>
-            <p className="text-base leading-relaxed text-text-muted">
-              Deep experience in technical support engineering at InfluxData,
-              Demandbase, and ScreenCloud. Distributed systems, databases,
-              cloud infrastructure — I trace issues through the full stack.
-            </p>
-          </div>
-          <div className="group">
-            <div className="mb-3 font-mono text-2xl text-accent">03</div>
-            <h3 className="mb-2 text-lg font-medium">Bridge the Gap</h3>
-            <p className="text-base leading-relaxed text-text-muted">
-              The rarest skill in tech: understanding both how products are
-              built and how customers use them. I turn customer pain into
-              product improvements.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Current focus */}
-      <section className="border-t border-border-subtle py-20">
-        <h2 className="mb-12 font-mono text-xs tracking-widest text-text-faint uppercase">
-          Current focus
-        </h2>
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="rounded-lg border border-border-subtle bg-bg-surface p-6">
-            <div className="mb-2 font-mono text-xs text-live">● Active</div>
-            <h3 className="mb-2 text-lg font-medium">Ceroc CRM</h3>
-            <p className="text-base leading-relaxed text-text-muted">
-              Bespoke event and member management system. NextJS, C#,
-              Azure, SQL Server. Claude API integration for intelligent
-              data workflows.
-            </p>
-          </div>
-          <div className="rounded-lg border border-border-subtle bg-bg-surface p-6">
-            <div className="mb-2 font-mono text-xs text-wip">● Building</div>
-            <h3 className="mb-2 text-lg font-medium">This Site</h3>
-            <p className="text-base leading-relaxed text-text-muted">
-              A living portfolio of technical experiments and spikes.
-              Each one is a real thing I built to learn, not a tutorial
-              I followed.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Tech */}
-      <section className="border-t border-border-subtle py-20">
-        <h2 className="mb-12 font-mono text-xs tracking-widest text-text-faint uppercase">
-          Tech I work with
-        </h2>
-        <div className="flex flex-wrap gap-2">
-          {[
-            "NextJS",
-            "React",
-            "TypeScript",
-            "Node.js",
-            "C#",
-            "Ruby on Rails",
-            "Python",
-            "PostgreSQL",
-            "SQL Server",
-            "AWS",
-            "Azure",
-            "GCP",
-            "Kubernetes",
-            "Grafana",
-            "InfluxDB",
-            "GraphQL",
-            "Zendesk API",
-            "Salesforce",
-          ].map((tech) => (
-            <span
-              key={tech}
-              className="rounded-full border border-border-subtle px-3 py-1 font-mono text-xs text-text-muted"
+            Showing the product, not just saying I can build one.
+          </h1>
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-text-muted md:text-xl">
+            This portfolio now leads with the Global Orientation Ritual demo: a
+            personal intelligence desk for capturing signals, reviewing weak
+            patterns, and turning scattered updates into a weekly read on what
+            matters.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <Link
+              href="/experiments/global-orientation-ritual"
+              className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-bg transition-colors hover:bg-accent-dim"
             >
-              {tech}
+              Open the demo case study
+            </Link>
+            <Link
+              href="/experiments"
+              className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm text-text-muted transition-colors hover:border-text-muted hover:text-text"
+            >
+              Browse all experiments
+              <span className="font-mono text-xs text-text-faint">
+                {liveCount}/{totalCount} live
+              </span>
+            </Link>
+          </div>
+        </div>
+        <div className="orientation-preview-card">
+          <div className="orientation-preview-header">
+            <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-text-faint">
+              Orientation Overview
             </span>
-          ))}
+            <span className="orientation-badge">Live demo concept</span>
+          </div>
+          <div className="orientation-stat-grid">
+            <div className="orientation-stat">
+              <span className="orientation-stat-label">Signal Base</span>
+              <strong>184</strong>
+            </div>
+            <div className="orientation-stat">
+              <span className="orientation-stat-label">Pending Inbox</span>
+              <strong>27</strong>
+            </div>
+            <div className="orientation-stat">
+              <span className="orientation-stat-label">Patterns</span>
+              <strong>12</strong>
+            </div>
+            <div className="orientation-stat">
+              <span className="orientation-stat-label">Mean Confidence</span>
+              <strong>0.71</strong>
+            </div>
+          </div>
+          <div className="orientation-reading">
+            <span className="orientation-stat-label">Current reading</span>
+            <p>
+              Tactical volatility is rising faster than structural change. The
+              desk is designed to stop short-term noise from dominating the
+              weekly view.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {["Tactical 62", "Strategic 78", "Structural 44"].map((item) => (
+              <span key={item} className="orientation-pill">
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="portfolio-section-grid">
+        <div className="portfolio-section-card portfolio-section-card-wide">
+          <p className="portfolio-kicker">What the demo does</p>
+          <h2 className="portfolio-section-title">A product spike with a real operating model</h2>
+          <div className="grid gap-5 md:grid-cols-3">
+            <div>
+              <h3 className="mb-2 text-lg font-medium">Capture signals</h3>
+              <p className="text-sm leading-7 text-text-muted">
+                Manual intake and automated inbox flows for fast tactical noise,
+                slower strategic moves, and deeper structural change.
+              </p>
+            </div>
+            <div>
+              <h3 className="mb-2 text-lg font-medium">Run a weekly ritual</h3>
+              <p className="text-sm leading-7 text-text-muted">
+                The app turns scattered observations into implications, open
+                questions, and a coherent orientation read.
+              </p>
+            </div>
+            <div>
+              <h3 className="mb-2 text-lg font-medium">Track recurring patterns</h3>
+              <p className="text-sm leading-7 text-text-muted">
+                Durable movement gets promoted into pattern watchlists with
+                explicit supporting evidence and conviction.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="portfolio-section-card">
+          <p className="portfolio-kicker">Built with</p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              "Next.js 15",
+              "React 19",
+              "TypeScript",
+              "Prisma",
+              "SQLite/Postgres",
+              "Route Handlers",
+              "RSS Ingestion",
+              "AI Adapters",
+            ].map((tech) => (
+              <span key={tech} className="portfolio-tag">
+                {tech}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="portfolio-section-grid">
+        <div className="portfolio-section-card">
+          <p className="portfolio-kicker">Why this belongs here</p>
+          <h2 className="portfolio-section-title">It shows how I work</h2>
+          <p className="text-base leading-8 text-text-muted">
+            I build tools around real operating problems: messy inputs,
+            uncertain signals, review workflows, and decisions that need a
+            usable interface instead of a vague prototype. This demo is a
+            stronger portfolio piece than a generic landing page because it
+            makes the product thinking visible.
+          </p>
+        </div>
+        <div className="portfolio-section-card">
+          <p className="portfolio-kicker">Current site status</p>
+          <div className="space-y-4 text-sm leading-7 text-text-muted">
+            <p>
+              The homepage now frames the portfolio around a concrete app,
+              while the experiments section still tracks smaller technical
+              spikes and supporting builds.
+            </p>
+            <p>
+              For contact or deeper background, use the links in the main nav
+              or jump straight into the experiment detail page.
+            </p>
+          </div>
         </div>
       </section>
     </div>
