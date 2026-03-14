@@ -42,7 +42,7 @@ function Nav() {
             LinkedIn
           </a>
           <a
-            href="https://github.com/jaygreasley"
+            href="https://github.com/JayFliz"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-text-muted transition-colors hover:text-text"
