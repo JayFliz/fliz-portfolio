@@ -66,6 +66,19 @@ export default async function ExperimentPage({
         <p className="mb-6 max-w-lg text-lg text-text-muted">
           {experiment.description}
         </p>
+        {isOrientationDemo ? (
+          <div className="mb-6">
+            <a
+              href="https://gor-orcin.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 font-mono text-sm text-text transition-colors hover:bg-bg-elevated"
+            >
+              View live demo
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        ) : null}
         <div className="flex flex-wrap gap-2">
           {experiment.tags.map((tag) => (
             <span
