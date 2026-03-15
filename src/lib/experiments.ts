@@ -23,6 +23,15 @@ export const experiments: Experiment[] = [
     date: "2026-03-14",
   },
   {
+    slug: "stack-demo-app",
+    title: "Stack Demo App",
+    description:
+      "A local-only architecture spike: a simple ticket board using App Router, Server Actions, and SQLite persistence.",
+    status: "live",
+    tags: ["Next.js", "SQLite", "Server Actions", "Zod"],
+    date: "2026-03-15",
+  },
+  {
     slug: "react-email",
     title: "React Email Templates",
     description:

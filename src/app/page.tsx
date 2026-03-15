@@ -85,7 +85,7 @@ export default function Home() {
         <h2 className="mb-12 font-mono text-xs tracking-widest text-text-faint uppercase">
           Current focus
         </h2>
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-3">
           <div className="rounded-lg border border-border-subtle bg-bg-surface p-6">
             <div className="mb-2 font-mono text-xs text-live">● Active</div>
             <h3 className="mb-2 text-lg font-medium">Ceroc CRM</h3>
@@ -103,6 +103,21 @@ export default function Home() {
             </p>
             <Link
               href="/experiments/global-orientation-ritual"
+              className="mt-4 inline-flex text-sm text-accent transition-colors hover:text-accent-dim"
+            >
+              View experiment →
+            </Link>
+          </div>
+          <div className="rounded-lg border border-border-subtle bg-bg-surface p-6">
+            <div className="mb-2 font-mono text-xs text-live">● Local demo</div>
+            <h3 className="mb-2 text-lg font-medium">Stack Demo App</h3>
+            <p className="text-base leading-relaxed text-text-muted">
+              A compact ticket-board spike used to demonstrate App Router
+              structure, Server Actions, and SQLite-backed persistence without
+              pretending it is a production deployment.
+            </p>
+            <Link
+              href="/experiments/stack-demo-app"
               className="mt-4 inline-flex text-sm text-accent transition-colors hover:text-accent-dim"
             >
               View experiment →
