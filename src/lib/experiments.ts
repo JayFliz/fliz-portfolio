@@ -32,6 +32,15 @@ export const experiments: Experiment[] = [
     date: "2026-03-15",
   },
   {
+    slug: "streamlit-datafusion-explorer",
+    title: "Streamlit DataFusion Explorer",
+    description:
+      "A local SQL workbench for uploaded CSV, JSON, and Parquet files using Streamlit, DataFusion, PyArrow, and pandas.",
+    status: "live",
+    tags: ["Python", "Streamlit", "DataFusion", "PyArrow"],
+    date: "2026-03-18",
+  },
+  {
     slug: "react-email",
     title: "React Email Templates",
     description:

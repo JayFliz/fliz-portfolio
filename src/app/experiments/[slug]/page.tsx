@@ -36,6 +36,8 @@ export default async function ExperimentPage({
 
   const isOrientationDemo = experiment.slug === "global-orientation-ritual";
   const isStackDemo = experiment.slug === "stack-demo-app";
+  const isDataFusionDemo =
+    experiment.slug === "streamlit-datafusion-explorer";
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-20">
@@ -295,6 +297,129 @@ export default async function ExperimentPage({
                 Keeping the scope narrow also matters. This is more useful in
                 the portfolio as a concise architecture example than it would be
                 as another half-finished hosted app.
+              </p>
+            </div>
+          </div>
+        </>
+      ) : isDataFusionDemo ? (
+        <>
+          <div className="space-y-6">
+            <div className="rounded-[1.75rem] border border-border-subtle bg-bg-surface p-4 shadow-[0_18px_40px_rgba(72,53,28,0.12)]">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-2 pt-2">
+                <div>
+                  <p className="portfolio-kicker">Captured locally</p>
+                  <h2 className="mt-2 text-2xl font-medium tracking-tight">
+                    Streamlit interface running against a local DataFusion session
+                  </h2>
+                </div>
+                <span className="rounded-full border border-border-subtle px-3 py-1 font-mono text-xs text-text-muted">
+                  Local-only
+                </span>
+              </div>
+              <div className="overflow-hidden rounded-[1.25rem] border border-border-subtle">
+                <Image
+                  src="/experiments/streamlit-datafusion-explorer.png"
+                  alt="Streamlit DataFusion Explorer showing registered tables, SQL query input, and a results grid."
+                  width={1512}
+                  height={982}
+                  className="h-auto w-full"
+                  priority
+                />
+              </div>
+            </div>
+
+            <div className="orientation-demo-surface">
+              <div className="orientation-demo-grid">
+                <div className="orientation-demo-card">
+                  <p className="portfolio-kicker">Overview</p>
+                  <h2 className="portfolio-section-title">
+                    A lightweight SQL layer over local files
+                  </h2>
+                  <p className="text-base leading-8 text-text-muted">
+                    This spike wraps Apache DataFusion in a Streamlit UI so a
+                    user can upload flat files, register them as in-memory
+                    tables, and run ad hoc SQL without provisioning a database
+                    server.
+                  </p>
+                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                    {[
+                      ["Inputs", "CSV, JSON, and Parquet upload support"],
+                      ["Engine", "DataFusion SessionContext with Arrow batches"],
+                      ["Output", "Interactive table view plus CSV and Parquet export"],
+                      ["Mode", "Local-only Streamlit app for quick exploration"],
+                    ].map(([label, value]) => (
+                      <div key={label} className="orientation-mini-card">
+                        <span className="orientation-stat-label">{label}</span>
+                        <strong>{value}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="orientation-demo-card">
+                  <p className="portfolio-kicker">Workflow</p>
+                  <div className="space-y-4 text-sm leading-7 text-text-muted">
+                    <p>1. Upload one or more files and infer a safe table name from each filename.</p>
+                    <p>2. Parse into Arrow tables with `pyarrow.csv`, `pyarrow.parquet`, or JSON decoding.</p>
+                    <p>3. Register batches into DataFusion and inspect schema in the sidebar.</p>
+                    <p>4. Run SQL, inspect results, then download the result set as CSV or Parquet.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+                <div className="orientation-demo-card">
+                  <p className="portfolio-kicker">Representative queries</p>
+                  <div className="space-y-4 font-mono text-sm text-text-muted">
+                    {[
+                      "SELECT * FROM orders LIMIT 10",
+                      "SELECT region, SUM(revenue) AS revenue FROM orders GROUP BY region ORDER BY revenue DESC",
+                      "SELECT product, AVG(unit_price) AS avg_price FROM orders GROUP BY product",
+                    ].map((query) => (
+                      <div
+                        key={query}
+                        className="rounded-2xl border border-border-subtle bg-white/55 px-4 py-3"
+                      >
+                        {query}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="orientation-demo-card">
+                  <p className="portfolio-kicker">Run locally</p>
+                  <div className="space-y-4 text-sm leading-7 text-text-muted">
+                    <div className="rounded-2xl border border-border-subtle bg-white/55 p-4 font-mono text-[13px] leading-6 text-text">
+                      <p>cd ../spikes/streamlit_datafusion</p>
+                      <p>python3 -m venv .venv</p>
+                      <p>source .venv/bin/activate</p>
+                      <p>pip install -r requirements.txt</p>
+                      <p>streamlit run app.py</p>
+                    </div>
+                    <p>
+                      The app ships with a sample `orders` dataset, so it is
+                      usable immediately even before uploading any files.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 border-t border-border-subtle pt-12">
+            <h2 className="mb-6 font-mono text-xs tracking-widest text-text-faint uppercase">
+              What I learned
+            </h2>
+            <div className="space-y-5 text-text-muted">
+              <p>
+                DataFusion is a strong fit for small local analysis tools
+                because it gives SQL over Arrow-native data structures without
+                dragging in the operational overhead of a separate database.
+              </p>
+              <p>
+                Streamlit also works well here because the value is in the data
+                workflow, not bespoke frontend engineering. That keeps the spike
+                focused on ingestion, query execution, and result export.
               </p>
             </div>
           </div>
