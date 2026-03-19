@@ -41,6 +41,15 @@ export const experiments: Experiment[] = [
     date: "2026-03-18",
   },
   {
+    slug: "transition-unit-mockup",
+    title: "Transition Unit MVP",
+    description:
+      "A structured career transition platform for veterans entering tech — mission tracks, cohort accountability, and mentor-linked progression instead of Discord chaos.",
+    status: "live",
+    tags: ["React", "Framer Motion", "Product Design", "UX"],
+    date: "2026-03-18",
+  },
+  {
     slug: "react-email",
     title: "React Email Templates",
     description:
