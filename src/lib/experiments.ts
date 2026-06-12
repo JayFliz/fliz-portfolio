@@ -42,6 +42,26 @@ export const experiments: Experiment[] = [
   },
   
   {
+    slug: "warrior-programme-handbook",
+    title: "Warrior Programme Handbook",
+    description:
+      "Post-course online support handbook for the Warrior Programme.",
+    status: "live",
+    tags: ["HTML", "Veteran Support"],
+    date: "2026-06-11",
+    externalUrl: "/experiments/warrior-programme/handbook.html",
+  },
+  {
+    slug: "warrior-programme-vimeo-links",
+    title: "Warrior Programme Vimeo Links",
+    description:
+      "Workshop video links for the Warrior Programme.",
+    status: "live",
+    tags: ["HTML", "Veteran Support", "Video"],
+    date: "2026-06-11",
+    externalUrl: "/experiments/warrior-programme/vimeo-links.html",
+  },
+  {
     slug: "react-email",
     title: "React Email Templates",
     description:
