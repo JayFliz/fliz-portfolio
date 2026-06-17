@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enquiries Module — Scope & Design</title>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #3e3e3e;
+      background: #f5f5f5;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+    a { color: #ff9700; text-decoration: none; }
+
+    /* ── Document wrapper ─────────────────────────────────── */
+    .doc {
+      max-width: 1000px;
+      margin: 32px auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    .doc-header {
+      background: linear-gradient(135deg, #ff9700 0%, #f57c00 100%);
+      color: #fff;
+      padding: 40px 48px;
+    }
+    .doc-header h1 { font-size: 28px; font-weight: 600; margin-bottom: 8px; }
+    .doc-header .meta { opacity: 0.9; font-size: 13px; }
+    .doc-body { padding: 48px; }
+
+    /* ── Typography ───────────────────────────────────────── */
+    h2 {
+      font-size: 20px; font-weight: 600; color: #3e3e3e;
+      border-bottom: 2px solid #ff9700; padding-bottom: 8px;
+      margin: 40px 0 20px;
+    }
+    h2:first-child { margin-top: 0; }
+    h3 { font-size: 16px; font-weight: 600; margin: 24px 0 12px; color: #555; }
+    p { margin-bottom: 12px; }
+    ul, ol { margin: 0 0 16px 24px; }
+    li { margin-bottom: 4px; }
+    code {
+      background: #f5f5f5; padding: 2px 6px; border-radius: 4px;
+      font-size: 12px; font-family: "SF Mono", Monaco, Consolas, monospace;
+    }
+
+    /* ── Tables ────────────────────────────────────────────── */
+    table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 13px; }
+    th {
+      background: #fafafa; text-align: left; padding: 10px 12px;
+      border-bottom: 2px solid #e0e0e0; font-weight: 600; color: #555;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid #eee; vertical-align: top; }
+    tr:hover td { background: #fafafa; }
+
+    /* ── Chips / Badges ───────────────────────────────────── */
+    .chip {
+      display: inline-block; padding: 2px 10px; border-radius: 12px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.3px;
+    }
+    .chip-blue { background: #e3f2fd; color: #1565c0; }
+    .chip-amber { background: #fff3e0; color: #e65100; }
+    .chip-green { background: #e8f5e9; color: #2e7d32; }
+    .chip-grey { background: #f5f5f5; color: #757575; }
+    .chip-red { background: #ffebee; color: #c62828; }
+    .chip-orange { background: #fff3e0; color: #f57c00; }
+
+    /* ── Info / Warning boxes ─────────────────────────────── */
+    .callout {
+      padding: 16px 20px; border-radius: 8px; margin: 16px 0;
+      font-size: 13px; display: flex; align-items: flex-start; gap: 10px;
+    }
+    .callout-info { background: #e3f2fd; border-left: 4px solid #0288d1; color: #01579b; }
+    .callout-warn { background: #fff3e0; border-left: 4px solid #ed6c02; color: #e65100; }
+    .callout-icon { font-size: 18px; flex-shrink: 0; }
+
+    /* ── Flow diagram ─────────────────────────────────────── */
+    .flow {
+      display: flex; gap: 24px; align-items: flex-start;
+      flex-wrap: wrap; margin: 24px 0;
+    }
+    .flow-box {
+      flex: 1; min-width: 240px; border: 2px solid #e0e0e0;
+      border-radius: 12px; padding: 20px; background: #fafafa;
+    }
+    .flow-box h4 {
+      font-size: 13px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 12px; color: #ff9700;
+    }
+    .flow-box ul { margin: 0; padding: 0; list-style: none; }
+    .flow-box li { padding: 4px 0; font-size: 13px; }
+    .flow-box li::before { content: ""; display: inline-block; width: 6px; height: 6px; background: #ff9700; border-radius: 50%; margin-right: 8px; }
+    .flow-arrow {
+      display: flex; align-items: center; font-size: 28px; color: #ccc;
+      padding-top: 40px; flex-shrink: 0;
+    }
+
+    /* ── Code blocks ──────────────────────────────────────── */
+    pre {
+      background: #1e1e1e; color: #d4d4d4; padding: 20px;
+      border-radius: 8px; overflow-x: auto; margin: 16px 0 24px;
+      font-size: 12px; line-height: 1.5;
+      font-family: "SF Mono", Monaco, Consolas, monospace;
+    }
+    pre .key { color: #9cdcfe; }
+    pre .str { color: #ce9178; }
+    pre .null { color: #569cd6; }
+    pre .comment { color: #6a9955; }
+
+    /* ── File tree ─────────────────────────────────────────── */
+    .file-tree {
+      background: #fafafa; border: 1px solid #e0e0e0; border-radius: 8px;
+      padding: 20px; font-family: "SF Mono", Monaco, Consolas, monospace;
+      font-size: 12px; line-height: 1.8; color: #555;
+    }
+    .file-tree .dir { color: #ff9700; font-weight: 600; }
+    .file-tree .file { color: #3e3e3e; }
+    .file-tree .comment { color: #999; font-style: italic; }
+
+    /* ══════════════════════════════════════════════════════════
+       UI MOCKUP STYLES — Simulates the Ceroc Admin app frame
+       ══════════════════════════════════════════════════════════ */
+    .mockup-container {
+      border: 1px solid #ddd; border-radius: 12px; overflow: hidden;
+      margin: 24px 0 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .mockup-label {
+      background: #fafafa; border-bottom: 1px solid #eee;
+      padding: 8px 16px; font-size: 11px; font-weight: 600;
+      color: #999; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    /* App frame */
+    .app-frame { display: flex; flex-direction: column; height: 680px; background: #f5f5f5; }
+
+    /* Header bar */
+    .app-header {
+      height: 48px; background: #fff; border-bottom: 1px solid #e0e0e0;
+      display: flex; align-items: center; padding: 0 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06); flex-shrink: 0; z-index: 10;
+    }
+    .app-header .logo {
+      font-weight: 700; font-size: 16px; color: #ff9700; margin-right: 16px;
+    }
+    .app-header .user { margin-left: auto; font-size: 12px; color: #999; }
+
+    /* Sidebar + Content area */
+    .app-body { display: flex; flex: 1; overflow: hidden; }
+
+    /* Sidebar */
+    .app-sidebar {
+      width: 180px; background: #fff; border-right: 1px solid #e0e0e0;
+      flex-shrink: 0; overflow-y: auto; padding-top: 4px;
+    }
+    .app-sidebar a {
+      display: block; padding: 9px 16px; font-size: 13px; color: #3e3e3e;
+      border-bottom: 1px solid #f0f0f0; transition: all 0.15s;
+    }
+    .app-sidebar a:hover { background: #fff8f0; }
+    .app-sidebar a.active {
+      color: #ff9700; font-weight: 600; background: #fff8f0;
+      border-left: 3px solid #ff9700; padding-left: 13px;
+    }
+
+    /* Main content */
+    .app-main { flex: 1; overflow-y: auto; padding: 20px; background: #f9f9f9; }
+
+    /* ── Reusable UI elements inside mockups ───────────────── */
+
+    /* Page header */
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .page-header h1 { font-size: 18px; font-weight: 600; color: #3e3e3e; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 16px; border-radius: 8px; font-size: 13px;
+      font-weight: 500; cursor: pointer; border: none; transition: all 0.15s;
+    }
+    .btn-primary { background: #ff9700; color: #fff; }
+    .btn-primary:hover { background: #f57c00; }
+    .btn-outlined {
+      background: transparent; color: #ff9700;
+      border: 1px solid #ff9700;
+    }
+    .btn-outlined:hover { background: #fff8f0; }
+    .btn-success { background: #2e7d32; color: #fff; }
+    .btn-error { background: #d32f2f; color: #fff; }
+    .btn-text { background: none; border: none; color: #ff9700; padding: 6px 8px; }
+    .btn-sm { padding: 4px 12px; font-size: 12px; }
+    .btn-lg { padding: 8px 24px; font-size: 14px; }
+
+    /* Cards / Paper */
+    .paper {
+      background: #fff; border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08); padding: 16px;
+    }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+      padding: 16px; background: #fff; border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 16px;
+    }
+    .filter-bar .input {
+      padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px;
+      font-size: 12px; min-width: 120px; background: #fff; color: #3e3e3e;
+    }
+    .filter-bar select { padding: 6px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; background: #fff; color: #3e3e3e; }
+
+    /* Data grid */
+    .data-grid { background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; }
+    .data-grid table { width: 100%; border-collapse: collapse; margin: 0; }
+    .data-grid th {
+      background: #fafafa; padding: 10px 12px; font-size: 12px;
+      font-weight: 600; color: #666; text-align: left;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    .data-grid td {
+      padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+    }
+    .data-grid tr:hover td { background: #fff8f0; }
+    .data-grid .pagination {
+      display: flex; align-items: center; justify-content: flex-end;
+      padding: 8px 12px; font-size: 12px; color: #999; gap: 8px;
+      border-top: 1px solid #eee;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex; border-bottom: 2px solid #e0e0e0; margin-bottom: 20px;
+    }
+    .tab {
+      padding: 10px 20px; font-size: 13px; font-weight: 500;
+      color: #999; cursor: pointer; border-bottom: 2px solid transparent;
+      margin-bottom: -2px; transition: all 0.15s;
+    }
+    .tab.active { color: #ff9700; border-bottom-color: #ff9700; }
+
+    /* Form fields */
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block; font-size: 12px; font-weight: 500;
+      color: #666; margin-bottom: 4px;
+    }
+    .form-group .input, .form-group select, .form-group textarea {
+      width: 100%; padding: 8px 10px; border: 1px solid #ccc;
+      border-radius: 6px; font-size: 13px; background: #fff; color: #3e3e3e;
+    }
+    .form-group textarea { min-height: 60px; resize: vertical; font-family: inherit; }
+    .form-row { display: flex; gap: 16px; }
+    .form-row > * { flex: 1; }
+
+    /* Section headings in detail page */
+    .section-title {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; color: #999; margin-bottom: 12px;
+    }
+
+    /* Action buttons row */
+    .actions-row {
+      display: flex; gap: 10px; padding: 16px;
+      border-top: 1px solid #eee; margin-top: 16px;
+    }
+
+    /* Follow-up icon */
+    .follow-up-icon { color: #ed6c02; font-weight: 700; }
+
+    /* Read-only value */
+    .ro-value { font-size: 13px; color: #3e3e3e; padding: 4px 0; }
+
+    /* Detail grid */
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+    /* Save footer */
+    .save-footer {
+      display: flex; justify-content: center; gap: 12px;
+      padding: 12px 20px; background: #fff;
+      border-top: 2px solid #e0e0e0; flex-shrink: 0;
+    }
+
+    /* Checkbox */
+    .checkbox { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+    .checkbox input { accent-color: #ff9700; width: 14px; height: 14px; }
+
+    /* Email sent state */
+    .email-sent {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: #2e7d32; font-size: 12px; font-weight: 500;
+    }
+
+    /* Architecture diagram */
+    .arch-diagram {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; padding: 24px; margin: 20px 0;
+    }
+    .arch-box {
+      border: 2px solid #e0e0e0; border-radius: 10px; padding: 16px 20px;
+      text-align: center; min-width: 150px; background: #fff;
+    }
+    .arch-box h4 { font-size: 12px; font-weight: 700; color: #ff9700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .arch-box p { font-size: 11px; color: #777; margin: 0; }
+    .arch-arrow { font-size: 24px; color: #ccc; }
+
+    /* Page break for print */
+    @media print {
+      .doc { box-shadow: none; margin: 0; }
+      .mockup-container { break-inside: avoid; }
+      h2 { break-after: avoid; }
+    }
+    .page-break { page-break-before: always; margin-top: 40px; }
+  </style>
+</head>
+<body>
+  <div class="doc">
+
+    <!-- ═══ HEADER ═══ -->
+    <div class="doc-header">
+      <h1>Enquiries Module — Scope & Design</h1>
+      <div class="meta">June 2026 &middot; Draft &middot; Engineering &middot; Ceroc Admin Platform</div>
+    </div>
+
+    <div class="doc-body">
+
+      <!-- ═══ 1. OVERVIEW ═══ -->
+      <h2>1. Overview</h2>
+      <p>
+        The Enquiries module captures inbound interest from potential and existing dancers — typically via the
+        public website — and routes them to the correct franchise for follow-up. An admin reviews enquiries,
+        optionally triggers a welcome email via Iterable, and can convert an enquiry into a member record.
+      </p>
+      <p>
+        The backend API is <strong>shared</strong> between this admin app and the public website (at minimum).
+        The admin UI is a module within this project following existing patterns.
+      </p>
+
+      <!-- Flow -->
+      <h3>System Flow</h3>
+      <div class="flow">
+        <div class="flow-box">
+          <h4>Public Website</h4>
+          <ul>
+            <li>Dancer fills in enquiry form</li>
+            <li>Name, email, phone, postcode</li>
+            <li>Optional: venue or offer link</li>
+            <li>Free-text message</li>
+          </ul>
+        </div>
+        <div class="flow-arrow">&#10132;</div>
+        <div class="flow-box">
+          <h4>BookingZapp API</h4>
+          <ul>
+            <li>Receives POST /enquiries</li>
+            <li>Resolves territory from postcode / venue / offer</li>
+            <li>Sets status: <span class="chip chip-blue">New</span></li>
+            <li>Stores enquiry for admin review</li>
+          </ul>
+        </div>
+        <div class="flow-arrow">&#10132;</div>
+        <div class="flow-box">
+          <h4>Admin App</h4>
+          <ul>
+            <li>Admin reviews in Enquiries list</li>
+            <li>Sets type, status, follow-up flag</li>
+            <li>Triggers Iterable email</li>
+            <li>Converts to member (optional)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Routing -->
+      <h3>Territory Routing Logic</h3>
+      <table>
+        <thead>
+          <tr><th>Input</th><th>Resolution</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Postcode</strong></td><td>Look up <code>TerritoryPostcodeAllocation</code> to find the owning territory</td></tr>
+          <tr><td><strong>Venue ID</strong></td><td>Venue record has a <code>territoryID</code> — use directly</td></tr>
+          <tr><td><strong>Offer ID</strong></td><td>Offer belongs to an event which belongs to a territory</td></tr>
+          <tr><td><strong>None</strong></td><td>Assign to unrouted queue for manual triage</td></tr>
+        </tbody>
+      </table>
+
+      <!-- ═══ 2. DATA MODEL ═══ -->
+      <h2>2. Data Model</h2>
+
+      <h3>Enquiry Entity</h3>
+      <table>
+        <thead>
+          <tr><th>Field</th><th>Type</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>publicRef</code></td><td>UUID (PK)</td><td>Standard BookingZapp identifier</td></tr>
+          <tr><td><code>firstName</code></td><td>string</td><td>Required</td></tr>
+          <tr><td><code>lastName</code></td><td>string</td><td>Required</td></tr>
+          <tr><td><code>emailAddress</code></td><td>string</td><td>Required (primary contact)</td></tr>
+          <tr><td><code>phoneNumber</code></td><td>string?</td><td>Optional</td></tr>
+          <tr><td><code>postcode</code></td><td>string?</td><td>Used for territory routing</td></tr>
+          <tr><td><code>venueID</code></td><td>UUID?</td><td>If enquiry relates to a specific venue</td></tr>
+          <tr><td><code>offerID</code></td><td>UUID?</td><td>If enquiry relates to a specific offer</td></tr>
+          <tr><td><code>territoryID</code></td><td>UUID?</td><td>Resolved from postcode/venue/offer; for filtering</td></tr>
+          <tr><td><code>message</code></td><td>text?</td><td>Free-text from the enquirer</td></tr>
+          <tr><td><code>enquiryTypeID</code></td><td>UUID</td><td>FK to EnquiryType lookup</td></tr>
+          <tr><td><code>status</code></td><td>enum</td><td><span class="chip chip-blue">new</span> <span class="chip chip-amber">in_progress</span> <span class="chip chip-green">responded</span> <span class="chip chip-grey">closed</span></td></tr>
+          <tr><td><code>followUp</code></td><td>boolean</td><td>Flag for follow-up queue</td></tr>
+          <tr><td><code>followUpDate</code></td><td>datetime?</td><td>When to follow up</td></tr>
+          <tr><td><code>source</code></td><td>string</td><td><code>website</code>, <code>phone</code>, <code>walk_in</code>, <code>admin</code></td></tr>
+          <tr><td><code>memberID</code></td><td>UUID?</td><td>Set when converted/linked to member</td></tr>
+          <tr><td><code>iterableMessageID</code></td><td>string?</td><td>Tracks Iterable send for audit</td></tr>
+          <tr><td><code>notes</code></td><td>text?</td><td>Internal admin notes</td></tr>
+          <tr><td><code>createdDate</code></td><td>datetime</td><td>When submitted</td></tr>
+          <tr><td><code>modifiedDate</code></td><td>datetime</td><td>Last update</td></tr>
+          <tr><td><code>modifiedBy</code></td><td>UUID</td><td>Admin who last modified</td></tr>
+        </tbody>
+      </table>
+
+      <h3>EnquiryType Lookup</h3>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td><code>publicRef</code></td><td>UUID (PK)</td></tr>
+          <tr><td><code>enquiryTypeName</code></td><td>string</td></tr>
+          <tr><td><code>active</code></td><td>boolean</td></tr>
+        </tbody>
+      </table>
+      <p>Seed values: <span class="chip chip-blue">New Dancer</span> <span class="chip chip-green">Returning Dancer</span> <span class="chip chip-orange">Private Event</span> <span class="chip chip-amber">Corporate Booking</span> <span class="chip chip-grey">General Enquiry</span> <span class="chip chip-red">Complaint</span></p>
+
+      <!-- ═══ 3. API DESIGN ═══ -->
+      <h2>3. API Design</h2>
+      <p>The API lives on the BookingZapp backend, consumed by both the public website and this admin app.</p>
+
+      <h3>Endpoints</h3>
+      <table>
+        <thead><tr><th>Method</th><th>Path</th><th>Consumer</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip chip-green">POST</span></td><td><code>/api/v2/enquiries</code></td><td>Website + Admin</td><td>Create new enquiry</td></tr>
+          <tr><td><span class="chip chip-blue">GET</span></td><td><code>/api/v2/enquiries</code></td><td>Admin</td><td>Search/list with filters</td></tr>
+          <tr><td><span class="chip chip-blue">GET</span></td><td><code>/api/v2/enquiries/{id}</code></td><td>Admin</td><td>Get enquiry detail</td></tr>
+          <tr><td><span class="chip chip-amber">PUT</span></td><td><code>/api/v2/enquiries/{id}</code></td><td>Admin</td><td>Update enquiry (status, notes)</td></tr>
+          <tr><td><span class="chip chip-red">DELETE</span></td><td><code>/api/v2/enquiries/{id}</code></td><td>Admin</td><td>Soft-delete / archive</td></tr>
+          <tr><td><span class="chip chip-green">POST</span></td><td><code>/api/v2/enquiries/{id}/send</code></td><td>Admin</td><td>Trigger Iterable email</td></tr>
+          <tr><td><span class="chip chip-blue">GET</span></td><td><code>/api/v2/enquiryTypes</code></td><td>Admin</td><td>List enquiry type lookups</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Include Fields (Bitmask)</h3>
+      <table>
+        <thead><tr><th>Bit</th><th>Include</th></tr></thead>
+        <tbody>
+          <tr><td>2</td><td><code>enquiryType</code></td></tr>
+          <tr><td>4</td><td><code>territory</code></td></tr>
+          <tr><td>8</td><td><code>venue</code></td></tr>
+          <tr><td>16</td><td><code>offer</code></td></tr>
+          <tr><td>32</td><td><code>member</code> (if linked)</td></tr>
+        </tbody>
+      </table>
+
+      <h3>POST /enquiries — Example</h3>
+      <pre>{
+  <span class="key">"firstName"</span>: <span class="str">"Sarah"</span>,
+  <span class="key">"lastName"</span>: <span class="str">"Connor"</span>,
+  <span class="key">"emailAddress"</span>: <span class="str">"sarah@example.com"</span>,
+  <span class="key">"phoneNumber"</span>: <span class="str">"07700900123"</span>,
+  <span class="key">"postcode"</span>: <span class="str">"SW1A 1AA"</span>,
+  <span class="key">"venueID"</span>: <span class="null">null</span>,
+  <span class="key">"offerID"</span>: <span class="null">null</span>,
+  <span class="key">"message"</span>: <span class="str">"I'd like to try a beginner class near Westminster"</span>,
+  <span class="key">"source"</span>: <span class="str">"website"</span>
+}</pre>
+      <div class="callout callout-info">
+        <span class="callout-icon">&#9432;</span>
+        <span>The API handles territory resolution server-side from postcode/venue/offer and sets initial <code>status: "new"</code> and default <code>enquiryTypeID</code>.</span>
+      </div>
+
+
+      <!-- ═══ 4. ADMIN UI ═══ -->
+      <div class="page-break"></div>
+      <h2>4. Admin UI — Screen Mockups</h2>
+
+      <!-- ── LIST PAGE ── -->
+      <h3>4.1 Enquiries List Page</h3>
+      <div class="mockup-container">
+        <div class="mockup-label">Screen Mockup — Enquiries List</div>
+        <div class="app-frame">
+          <!-- Header -->
+          <div class="app-header">
+            <span class="logo">Ceroc</span>
+            <span class="user">Jay &middot; Admin</span>
+          </div>
+          <div class="app-body">
+            <!-- Sidebar -->
+            <div class="app-sidebar">
+              <a href="#">Account</a>
+              <a href="#">System Overview</a>
+              <a href="#">Event Templates</a>
+              <a href="#">Events</a>
+              <a href="#" class="active">Enquiries</a>
+              <a href="#">Invoices</a>
+              <a href="#">Members</a>
+              <a href="#">Offers</a>
+              <a href="#">Rewards</a>
+              <a href="#">Venues</a>
+              <a href="#">Territories</a>
+            </div>
+            <!-- Main content -->
+            <div class="app-main">
+              <div class="page-header">
+                <h1>Enquiries</h1>
+                <button class="btn btn-primary btn-sm">+ New Enquiry</button>
+              </div>
+              <!-- Filters -->
+              <div class="filter-bar">
+                <select class="input" style="min-width:100px">
+                  <option>All Statuses</option>
+                  <option>New</option>
+                  <option>In Progress</option>
+                  <option>Responded</option>
+                  <option>Closed</option>
+                </select>
+                <select class="input" style="min-width:110px">
+                  <option>All Types</option>
+                  <option>New Dancer</option>
+                  <option>Corporate</option>
+                  <option>Private Event</option>
+                </select>
+                <select class="input" style="min-width:120px">
+                  <option>All Territories</option>
+                  <option>London South</option>
+                  <option>Manchester</option>
+                  <option>Bristol</option>
+                </select>
+                <label class="checkbox"><input type="checkbox"> Follow-up only</label>
+                <div style="flex:1"></div>
+                <input type="text" class="input" placeholder="Search name or email..." style="min-width:180px">
+                <button class="btn btn-primary btn-sm">Search</button>
+                <button class="btn btn-text btn-sm">Clear</button>
+              </div>
+              <!-- Grid -->
+              <div class="data-grid">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Type</th>
+                      <th>Territory</th>
+                      <th>Status</th>
+                      <th>Source</th>
+                      <th>Date</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Sarah Connor</strong></td>
+                      <td>sarah@example.com</td>
+                      <td><span class="chip chip-blue">New Dancer</span></td>
+                      <td>London South</td>
+                      <td><span class="chip chip-blue">New</span></td>
+                      <td>Website</td>
+                      <td>17/06/2026</td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td><strong>John Smith</strong></td>
+                      <td>john@test.com</td>
+                      <td><span class="chip chip-orange">Corporate</span></td>
+                      <td>Manchester</td>
+                      <td><span class="chip chip-green">Responded</span></td>
+                      <td>Phone</td>
+                      <td>15/06/2026</td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Jane Doe</strong> <span class="follow-up-icon" title="Follow-up flagged">&#9888;</span></td>
+                      <td>jane@doe.com</td>
+                      <td><span class="chip chip-green">Returning</span></td>
+                      <td>Bristol</td>
+                      <td><span class="chip chip-amber">In Progress</span></td>
+                      <td>Website</td>
+                      <td>14/06/2026</td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Mike Wilson</strong></td>
+                      <td>mike.w@gmail.com</td>
+                      <td><span class="chip chip-grey">General</span></td>
+                      <td>—</td>
+                      <td><span class="chip chip-blue">New</span></td>
+                      <td>Website</td>
+                      <td>13/06/2026</td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td><strong>Emma Brown</strong></td>
+                      <td>emma.b@outlook.com</td>
+                      <td><span class="chip chip-blue">New Dancer</span></td>
+                      <td>London North</td>
+                      <td><span class="chip chip-grey">Closed</span></td>
+                      <td>Admin</td>
+                      <td>10/06/2026</td>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="pagination">
+                  Rows per page:
+                  <select style="border:1px solid #ddd; border-radius:4px; font-size:12px; padding:2px">
+                    <option>10</option><option>25</option><option>50</option>
+                  </select>
+                  1–5 of 23
+                  &nbsp; &#9664; &nbsp; &#9654;
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DETAIL PAGE ── -->
+      <h3>4.2 Enquiry Detail Page</h3>
+      <div class="mockup-container">
+        <div class="mockup-label">Screen Mockup — Enquiry Detail (Edit Mode)</div>
+        <div class="app-frame" style="height: 780px;">
+          <!-- Header -->
+          <div class="app-header">
+            <span class="logo">Ceroc</span>
+            <span class="user">Jay &middot; Admin</span>
+          </div>
+          <div class="app-body">
+            <!-- Sidebar -->
+            <div class="app-sidebar">
+              <a href="#">Account</a>
+              <a href="#">System Overview</a>
+              <a href="#">Event Templates</a>
+              <a href="#">Events</a>
+              <a href="#" class="active">Enquiries</a>
+              <a href="#">Invoices</a>
+              <a href="#">Members</a>
+              <a href="#">Offers</a>
+              <a href="#">Rewards</a>
+              <a href="#">Venues</a>
+              <a href="#">Territories</a>
+            </div>
+            <!-- Main content -->
+            <div class="app-main">
+              <div class="page-header">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <button class="btn btn-outlined btn-sm">&#8592; Back</button>
+                  <h1>Enquiry: Sarah Connor</h1>
+                  <span class="chip chip-blue">New</span>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <button class="btn btn-outlined btn-sm">Delete</button>
+                </div>
+              </div>
+
+              <!-- Tabs -->
+              <div class="tabs">
+                <div class="tab active">Details</div>
+                <div class="tab">Activity</div>
+              </div>
+
+              <!-- Detail content -->
+              <div class="detail-grid">
+                <!-- Left: Contact -->
+                <div class="paper">
+                  <div class="section-title">Contact Information</div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>First Name</label>
+                      <input type="text" class="input" value="Sarah">
+                    </div>
+                    <div class="form-group">
+                      <label>Last Name</label>
+                      <input type="text" class="input" value="Connor">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Email</label>
+                    <input type="text" class="input" value="sarah@example.com">
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Phone</label>
+                      <input type="text" class="input" value="07700 900123">
+                    </div>
+                    <div class="form-group">
+                      <label>Postcode</label>
+                      <input type="text" class="input" value="SW1A 1AA">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Message</label>
+                    <textarea class="input" rows="3">I'd like to try a beginner class near Westminster</textarea>
+                  </div>
+                </div>
+
+                <!-- Right: Routing + Admin -->
+                <div>
+                  <div class="paper" style="margin-bottom:16px">
+                    <div class="section-title">Routing</div>
+                    <div class="form-group">
+                      <label>Territory</label>
+                      <div class="ro-value">London South</div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label>Venue</label>
+                        <div class="ro-value" style="color:#999">—</div>
+                      </div>
+                      <div class="form-group">
+                        <label>Source</label>
+                        <div class="ro-value">Website</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="paper">
+                    <div class="section-title">Admin</div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label>Enquiry Type</label>
+                        <select class="input">
+                          <option selected>New Dancer</option>
+                          <option>Returning Dancer</option>
+                          <option>Private Event</option>
+                          <option>Corporate Booking</option>
+                          <option>General Enquiry</option>
+                          <option>Complaint</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label>Status</label>
+                        <select class="input">
+                          <option selected>New</option>
+                          <option>In Progress</option>
+                          <option>Responded</option>
+                          <option>Closed</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="form-row" style="align-items:flex-end">
+                      <div class="form-group">
+                        <label class="checkbox"><input type="checkbox"> Flag for follow-up</label>
+                      </div>
+                      <div class="form-group">
+                        <label>Follow-up Date</label>
+                        <input type="date" class="input" value="2026-06-22">
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label>Notes</label>
+                      <textarea class="input" rows="2" placeholder="Internal notes..."></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="actions-row">
+                <button class="btn btn-primary btn-sm">&#9993; Send Welcome Email</button>
+                <button class="btn btn-outlined btn-sm">Convert to Member</button>
+                <button class="btn btn-outlined btn-sm">Link Existing Member</button>
+              </div>
+            </div>
+          </div>
+          <!-- Save footer -->
+          <div class="save-footer">
+            <button class="btn btn-outlined">Cancel</button>
+            <button class="btn btn-primary btn-lg">Save</button>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ═══ 5. ITERABLE INTEGRATION ═══ -->
+      <div class="page-break"></div>
+      <h2>5. Iterable Integration</h2>
+
+      <h3>Architecture</h3>
+      <div class="arch-diagram">
+        <div class="arch-box">
+          <h4>Admin App</h4>
+          <p>Admin clicks<br>"Send Welcome Email"</p>
+        </div>
+        <div class="arch-arrow">&#10132;</div>
+        <div class="arch-box" style="border-color: #ff9700;">
+          <h4>BookingZapp API</h4>
+          <p>Resolves venue, class dates,<br>territory contact info</p>
+        </div>
+        <div class="arch-arrow">&#10132;</div>
+        <div class="arch-box">
+          <h4>Iterable</h4>
+          <p>Sends templated email<br>to the enquirer</p>
+        </div>
+      </div>
+
+      <ul>
+        <li><strong>Admin-triggered only</strong> — no auto-send on website submission. Admin reviews first.</li>
+        <li><strong>Template selection</strong> — admin picks from configured Iterable templates via a modal dialog.</li>
+        <li><strong>Data resolution is server-side</strong> — the API resolves nearest venue, next class dates, and territory contact details before calling Iterable.</li>
+        <li><strong>Audit trail</strong> — <code>iterableMessageID</code> stored on the enquiry for tracking.</li>
+        <li>Iterable API key and template IDs are backend config — never exposed to the frontend.</li>
+      </ul>
+
+      <h3>Iterable Templates (Initial Set)</h3>
+      <table>
+        <thead><tr><th>Template Key</th><th>Use Case</th></tr></thead>
+        <tbody>
+          <tr><td><code>new_dancer_welcome</code></td><td>First-time enquiry with local class info &amp; nearest venue</td></tr>
+          <tr><td><code>returning_dancer</code></td><td>Lapsed dancer re-engagement</td></tr>
+          <tr><td><code>corporate_enquiry</code></td><td>Corporate / private event response</td></tr>
+          <tr><td><code>general_response</code></td><td>Generic acknowledgement</td></tr>
+        </tbody>
+      </table>
+
+      <!-- ═══ 6. IMPLEMENTATION ═══ -->
+      <h2>6. Implementation Phases</h2>
+      <table>
+        <thead><tr><th>Phase</th><th>Scope</th><th>Depends On</th></tr></thead>
+        <tbody>
+          <tr><td><strong>1</strong></td><td>Backend API: CRUD endpoints, territory routing, enquiry types</td><td>DB schema</td></tr>
+          <tr><td><strong>2</strong></td><td>Admin UI: list page, detail page, filters</td><td>Phase 1 API</td></tr>
+          <tr><td><strong>3</strong></td><td>Website form: public POST endpoint + form component</td><td>Phase 1 API</td></tr>
+          <tr><td><strong>4</strong></td><td>Iterable integration: send endpoint + template config</td><td>Iterable account</td></tr>
+          <tr><td><strong>5</strong></td><td>Convert-to-member flow + member linking</td><td>Phase 2 UI</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Admin App Module Structure</h3>
+      <div class="file-tree">
+        <span class="dir">src/enquiries/</span><br>
+        &nbsp;&nbsp;<span class="dir">components/</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">EnquiryDetails.tsx</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">EnquiryFilters.tsx</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">EnquiryStatusChip.tsx</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">SendEmailModal.tsx</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">ConvertToMemberModal.tsx</span><br>
+        &nbsp;&nbsp;<span class="dir">hooks/</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">useEnquiryDetails.ts</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">useEnquirySearch.ts</span><br>
+        &nbsp;&nbsp;<span class="dir">schema/</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">enquiry.schema.ts</span><br>
+        &nbsp;&nbsp;<span class="dir">services/</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">enquiriesApi.ts</span><br>
+        &nbsp;&nbsp;<span class="dir">types/</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">enquiry.ts</span><br>
+        <br>
+        <span class="dir">src/app/enquiries/</span><br>
+        &nbsp;&nbsp;<span class="file">page.tsx</span> <span class="comment">// List page</span><br>
+        &nbsp;&nbsp;<span class="dir">[id]/</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">page.tsx</span> <span class="comment">// Detail page</span><br>
+        <br>
+        <span class="dir">src/app/api/enquiries/</span><br>
+        &nbsp;&nbsp;<span class="file">route.ts</span> <span class="comment">// GET (search) + POST (create)</span><br>
+        &nbsp;&nbsp;<span class="dir">[id]/</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="file">route.ts</span> <span class="comment">// GET + PUT + DELETE</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="dir">send/</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">route.ts</span> <span class="comment">// POST (trigger Iterable email)</span><br>
+      </div>
+
+    </div><!-- /doc-body -->
+  </div><!-- /doc -->
+</body>
+</html>
