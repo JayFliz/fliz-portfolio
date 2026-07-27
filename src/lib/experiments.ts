@@ -8,6 +8,7 @@ export interface Experiment {
   tags: string[];
   date: string; // ISO date string
   externalUrl?: string; // For things like Expo that live elsewhere
+  vimeoId?: string;
 }
 
 // Add new experiments here — they'll appear on the experiments index automatically.
@@ -103,9 +104,10 @@ export const experiments: Experiment[] = [
     title: "Resend Transactional Email",
     description:
       "Email delivery integration using Resend API with Next.js serverless functions.",
-    status: "planned",
+    status: "wip",
     tags: ["Email", "API", "Resend"],
     date: "2026-02-27",
+    vimeoId: "1213292682",
   },
 ];
 

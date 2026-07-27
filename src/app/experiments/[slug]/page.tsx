@@ -38,6 +38,7 @@ export default async function ExperimentPage({
   const isStackDemo = experiment.slug === "stack-demo-app";
   const isDataFusionDemo =
     experiment.slug === "streamlit-datafusion-explorer";
+  const isResendDemo = experiment.slug === "resend-integration";
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-20">
@@ -420,6 +421,46 @@ export default async function ExperimentPage({
                 Streamlit also works well here because the value is in the data
                 workflow, not bespoke frontend engineering. That keeps the spike
                 focused on ingestion, query execution, and result export.
+              </p>
+            </div>
+          </div>
+        </>
+      ) : isResendDemo ? (
+        <>
+          <div className="overflow-hidden rounded-[1.75rem] border border-border-subtle bg-bg-surface p-4 shadow-[0_18px_40px_rgba(72,53,28,0.12)]">
+            <div className="mb-4 px-2 pt-2">
+              <p className="portfolio-kicker">Screen recording</p>
+              <h2 className="mt-2 text-2xl font-medium tracking-tight">
+                Resend integration walkthrough
+              </h2>
+            </div>
+            <div className="overflow-hidden rounded-[1.25rem] border border-border-subtle">
+              <div style={{ padding: "75% 0 0 0", position: "relative" }}>
+                <iframe
+                  src={`https://player.vimeo.com/video/${experiment.vimeoId}?badge=0&autopause=0&player_id=0&app_id=58479`}
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                  }}
+                  title={`${experiment.title} demo`}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 border-t border-border-subtle pt-12">
+            <h2 className="mb-6 font-mono text-xs tracking-widest text-text-faint uppercase">
+              What I learned
+            </h2>
+            <div className="prose prose-invert max-w-none text-text-muted">
+              <p>
+                Notes and learnings will go here as the experiment progresses.
               </p>
             </div>
           </div>
