@@ -104,7 +104,7 @@ export const experiments: Experiment[] = [
     slug: "resend-integration",
     title: "Resend Email Marketing - Irritable",
     description:
-      "Email marketing POC using Resend API with Next.js .",
+      "Email marketing POC using Resend API and SDK with Next.js .",
     status: "wip",
     tags: ["Email", "API", "Resend"],
     date: "2026-02-27",
