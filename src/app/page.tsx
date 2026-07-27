@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <div className="mx-auto max-w-5xl px-6">
       <section className="flex min-h-[70vh] flex-col justify-center py-20">
-        <p className="mb-4 font-mono text-sm tracking-widest text-accent uppercase">
+        <p className="mb-4 font-mono text-sm tracking-widest text-text-muted uppercase">
           Jay Greasley
         </p>
         <h1
@@ -30,7 +30,7 @@ export default function Home() {
         <div className="flex items-center gap-4">
           <Link
             href="/experiments"
-            className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-bg transition-colors hover:bg-accent-dim"
+            className="inline-flex items-center gap-2 rounded-full bg-text px-6 py-3 text-sm font-medium text-bg transition-opacity hover:opacity-80"
           >
             View experiments
             <span className="font-mono text-xs opacity-70">
@@ -52,7 +52,7 @@ export default function Home() {
         </h2>
         <div className="grid gap-8 md:grid-cols-3">
           <div className="group">
-            <div className="mb-3 font-mono text-2xl text-accent">01</div>
+            <div className="mb-3 font-mono text-2xl text-text-faint">01</div>
             <h3 className="mb-2 text-lg font-medium">Build Products</h3>
             <p className="text-base leading-relaxed text-text-muted">
               NextJS, React, TypeScript, C#, Ruby on Rails. I build full-stack
@@ -61,7 +61,7 @@ export default function Home() {
             </p>
           </div>
           <div className="group">
-            <div className="mb-3 font-mono text-2xl text-accent">02</div>
+            <div className="mb-3 font-mono text-2xl text-text-faint">02</div>
             <h3 className="mb-2 text-lg font-medium">Support & Debug</h3>
             <p className="text-base leading-relaxed text-text-muted">
               Deep experience in technical support engineering at InfluxData,
@@ -70,7 +70,7 @@ export default function Home() {
             </p>
           </div>
           <div className="group">
-            <div className="mb-3 font-mono text-2xl text-accent">03</div>
+            <div className="mb-3 font-mono text-2xl text-text-faint">03</div>
             <h3 className="mb-2 text-lg font-medium">Bridge the Gap</h3>
             <p className="text-base leading-relaxed text-text-muted">
               The rarest skill in tech: understanding both how products are
@@ -103,7 +103,7 @@ export default function Home() {
             </p>
             <Link
               href="/experiments/global-orientation-ritual"
-              className="mt-4 inline-flex text-sm text-accent transition-colors hover:text-accent-dim"
+              className="mt-4 inline-flex text-sm text-text-muted underline decoration-border-subtle underline-offset-4 transition-colors hover:text-text"
             >
               View experiment →
             </Link>
@@ -118,7 +118,7 @@ export default function Home() {
             </p>
             <Link
               href="/experiments/stack-demo-app"
-              className="mt-4 inline-flex text-sm text-accent transition-colors hover:text-accent-dim"
+              className="mt-4 inline-flex text-sm text-text-muted underline decoration-border-subtle underline-offset-4 transition-colors hover:text-text"
             >
               View experiment →
             </Link>

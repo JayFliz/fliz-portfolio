@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { experiments, type ExperimentStatus } from "@/lib/experiments";
 
@@ -24,7 +25,7 @@ export default function ExperimentsPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-20">
-      <p className="mb-4 font-mono text-sm tracking-widest text-accent uppercase">
+      <p className="mb-4 font-mono text-sm tracking-widest text-text-muted uppercase">
         Experiments
       </p>
       <h1
@@ -82,6 +83,17 @@ export default function ExperimentsPage() {
                   </span>
                 ))}
               </div>
+              {experiment.image && (
+                <div className="mt-4 overflow-hidden rounded-lg border border-border-subtle">
+                  <Image
+                    src={experiment.image}
+                    alt={`${experiment.title} screenshot`}
+                    width={1440}
+                    height={900}
+                    className="h-auto w-full"
+                  />
+                </div>
+              )}
             </div>
           );
 

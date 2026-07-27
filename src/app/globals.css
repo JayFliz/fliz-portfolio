@@ -1,31 +1,28 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #f2ecdf;
-  --color-bg-surface: rgba(255, 250, 242, 0.82);
-  --color-bg-elevated: #fff9ef;
-  --color-border: rgba(39, 47, 49, 0.18);
-  --color-border-subtle: rgba(39, 47, 49, 0.1);
-  --color-text: #182126;
-  --color-text-muted: #5f6769;
-  --color-text-faint: #8a8f90;
-  --color-accent: #0e5c52;
-  --color-accent-dim: #0a4a42;
-  --color-live: #4ade80;
-  --color-wip: #bc6c25;
-  --color-planned: #8a8f90;
+  --color-bg: #F7F6F3;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-elevated: #FFFFFF;
+  --color-border: rgba(0, 0, 0, 0.1);
+  --color-border-subtle: rgba(0, 0, 0, 0.06);
+  --color-text: #1A1A1A;
+  --color-text-muted: #6B6B6B;
+  --color-text-faint: #9B9B9B;
+  --color-accent: #1A1A1A;
+  --color-accent-dim: #333333;
+  --color-live: #3a9a6b;
+  --color-wip: #b07d3a;
+  --color-planned: #9B9B9B;
 
-  --font-display: "Playfair Display", Georgia, serif;
-  --font-body: "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  --font-display: "Instrument Serif", Georgia, serif;
+  --font-body: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "Fira Code", monospace;
 }
 
 @layer base {
   html {
-    background:
-      radial-gradient(circle at top left, rgba(188, 108, 37, 0.2), transparent 28%),
-      radial-gradient(circle at top right, rgba(14, 92, 82, 0.17), transparent 26%),
-      linear-gradient(180deg, #f6f0e3 0%, #efe6d3 100%);
+    background-color: var(--color-bg);
   }
 
   body {
@@ -34,15 +31,11 @@
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background:
-      radial-gradient(circle at top left, rgba(188, 108, 37, 0.14), transparent 24%),
-      radial-gradient(circle at top right, rgba(14, 92, 82, 0.16), transparent 22%),
-      linear-gradient(180deg, rgba(247, 241, 229, 0.92) 0%, rgba(239, 231, 212, 0.9) 100%);
   }
 
   ::selection {
-    background-color: var(--color-accent);
-    color: #eff7f4;
+    background-color: var(--color-text);
+    color: var(--color-bg);
   }
 
   a {
@@ -69,8 +62,6 @@
   .orientation-demo-card {
     border: 1px solid var(--color-border-subtle);
     background: var(--color-bg-surface);
-    backdrop-filter: blur(18px);
-    box-shadow: 0 18px 40px rgba(72, 53, 28, 0.12);
   }
 
   .hero-panel-grid {
@@ -78,9 +69,7 @@
     gap: 1.5rem;
     border-radius: 2rem;
     padding: 1.75rem;
-    background:
-      linear-gradient(135deg, rgba(255, 250, 240, 0.95), rgba(244, 235, 219, 0.84)),
-      var(--color-bg-surface);
+    background: var(--color-bg-surface);
   }
 
   .hero-panel-copy {
@@ -101,9 +90,7 @@
     display: grid;
     gap: 1rem;
     align-content: start;
-    background:
-      linear-gradient(180deg, rgba(255, 251, 244, 0.94), rgba(245, 236, 221, 0.78)),
-      var(--color-bg-surface);
+    background: var(--color-bg-surface);
   }
 
   .orientation-preview-header,
@@ -145,7 +132,7 @@
   .orientation-ui-column {
     border-radius: 1.25rem;
     border: 1px solid var(--color-border-subtle);
-    background: rgba(255, 255, 255, 0.55);
+    background: var(--color-bg);
     padding: 1rem;
   }
 
@@ -189,7 +176,7 @@
     border: 1px solid var(--color-border-subtle);
     padding: 0.45rem 0.75rem;
     color: var(--color-text-muted);
-    background: rgba(255, 255, 255, 0.56);
+    background: var(--color-bg);
   }
 
   .portfolio-section-grid {
@@ -211,11 +198,8 @@
   .orientation-demo-surface {
     border-radius: 2rem;
     border: 1px solid var(--color-border-subtle);
-    background:
-      linear-gradient(135deg, rgba(255, 250, 240, 0.9), rgba(244, 235, 219, 0.76)),
-      var(--color-bg-surface);
+    background: var(--color-bg-surface);
     padding: 1.5rem;
-    box-shadow: 0 18px 40px rgba(72, 53, 28, 0.12);
   }
 
   .orientation-demo-grid {

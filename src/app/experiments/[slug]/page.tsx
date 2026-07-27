@@ -213,7 +213,7 @@ export default async function ExperimentPage({
       ) : isStackDemo ? (
         <>
           <div className="space-y-6">
-            <div className="rounded-[1.75rem] border border-border-subtle bg-bg-surface p-4 shadow-[0_18px_40px_rgba(72,53,28,0.12)]">
+            <div className="rounded-[1.75rem] border border-border-subtle bg-bg-surface p-4 ">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-2 pt-2">
                 <div>
                   <p className="portfolio-kicker">Captured locally</p>
@@ -305,7 +305,7 @@ export default async function ExperimentPage({
       ) : isDataFusionDemo ? (
         <>
           <div className="space-y-6">
-            <div className="rounded-[1.75rem] border border-border-subtle bg-bg-surface p-4 shadow-[0_18px_40px_rgba(72,53,28,0.12)]">
+            <div className="rounded-[1.75rem] border border-border-subtle bg-bg-surface p-4 ">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-2 pt-2">
                 <div>
                   <p className="portfolio-kicker">Captured locally</p>
@@ -379,7 +379,7 @@ export default async function ExperimentPage({
                     ].map((query) => (
                       <div
                         key={query}
-                        className="rounded-2xl border border-border-subtle bg-white/55 px-4 py-3"
+                        className="rounded-2xl border border-border-subtle bg-bg px-4 py-3"
                       >
                         {query}
                       </div>
@@ -390,7 +390,7 @@ export default async function ExperimentPage({
                 <div className="orientation-demo-card">
                   <p className="portfolio-kicker">Run locally</p>
                   <div className="space-y-4 text-sm leading-7 text-text-muted">
-                    <div className="rounded-2xl border border-border-subtle bg-white/55 p-4 font-mono text-[13px] leading-6 text-text">
+                    <div className="rounded-2xl border border-border-subtle bg-bg p-4 font-mono text-[13px] leading-6 text-text">
                       <p>cd ../spikes/streamlit_datafusion</p>
                       <p>python3 -m venv .venv</p>
                       <p>source .venv/bin/activate</p>
@@ -427,7 +427,7 @@ export default async function ExperimentPage({
         </>
       ) : isResendDemo ? (
         <>
-          <div className="overflow-hidden rounded-[1.75rem] border border-border-subtle bg-bg-surface p-4 shadow-[0_18px_40px_rgba(72,53,28,0.12)]">
+          <div className="overflow-hidden rounded-[1.75rem] border border-border-subtle bg-bg-surface p-4 ">
             <div className="mb-4 px-2 pt-2">
               <p className="portfolio-kicker">Screen recording</p>
               <h2 className="mt-2 text-2xl font-medium tracking-tight">

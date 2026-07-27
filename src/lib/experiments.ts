@@ -9,6 +9,7 @@ export interface Experiment {
   date: string; // ISO date string
   externalUrl?: string; // For things like Expo that live elsewhere
   vimeoId?: string;
+  image?: string;
 }
 
 // Add new experiments here — they'll appear on the experiments index automatically.
@@ -108,6 +109,7 @@ export const experiments: Experiment[] = [
     tags: ["Email", "API", "Resend"],
     date: "2026-02-27",
     vimeoId: "1213292682",
+    image: "/experiments/resend-integration.png",
   },
 ];
 
