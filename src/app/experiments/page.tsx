@@ -38,6 +38,27 @@ export default function ExperimentsPage() {
         problem or explores a technology I want production experience with.
       </p>
 
+      <div className="mb-16">
+        <h2 className="mb-4 text-xl font-medium">Irritable email marketing</h2>
+        <div className="overflow-hidden rounded-lg border border-border-subtle">
+        <div style={{ padding: "75% 0 0 0", position: "relative" }}>
+          <iframe
+            src="https://player.vimeo.com/video/1213292682?badge=0&autopause=0&player_id=0&app_id=58479"
+            frameBorder="0"
+            allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+            }}
+            title="Screen Recording 2026-07-27 at 15.44.36"
+          />
+        </div>
+      </div>
+
       <div className="grid gap-4">
         {sorted.map((experiment) => {
           const status = statusConfig[experiment.status];
