@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ceroc — Dancer Journey Map</title>
+<style>
+  :root {
+    --ink: #1A2332;
+    --ink-soft: #374151;
+    --body: #44403C;
+    --muted: #8B8578;
+    --accent: #B45309;
+    --accent-light: #FEF3C7;
+    --ground: #FAF8F3;
+    --surface: #FFFFFF;
+    --surface-alt: #F3F0EA;
+    --border: #E5E1D8;
+    --border-strong: #D1CCC2;
+
+    --sys-web: #2563EB;
+    --sys-app: #D97706;
+    --sys-venue: #059669;
+    --sys-sso: #7C3AED;
+    --sys-email: #DC2626;
+    --sys-admin: #475569;
+    --sys-api: #6B7280;
+
+    --tag-loyalty: #7C3AED;
+    --tag-loyalty-bg: #EDE9FE;
+    --tag-discount: #059669;
+    --tag-discount-bg: #D1FAE5;
+    --tag-payment: #2563EB;
+    --tag-payment-bg: #DBEAFE;
+
+    --line-color: #C9C3B8;
+    --fork-pre: #2563EB;
+    --fork-walk: #059669;
+
+    --ff-display: system-ui, -apple-system, 'Segoe UI', Helvetica, sans-serif;
+    --ff-body: Georgia, 'Times New Roman', serif;
+
+    --page-max: 920px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #F0EDE6; --ink-soft: #D6D3CC; --body: #C4C0B8; --muted: #8A8680;
+      --accent: #F59E0B; --accent-light: #2A2010;
+      --ground: #0F1318; --surface: #181D24; --surface-alt: #1F252E;
+      --border: #2A3040; --border-strong: #3A4050;
+      --sys-web: #60A5FA; --sys-app: #FBBF24; --sys-venue: #34D399;
+      --sys-sso: #A78BFA; --sys-email: #F87171; --sys-admin: #94A3B8; --sys-api: #9CA3AF;
+      --tag-loyalty: #A78BFA; --tag-loyalty-bg: #1E1638;
+      --tag-discount: #34D399; --tag-discount-bg: #0A2618;
+      --tag-payment: #60A5FA; --tag-payment-bg: #0C1A30;
+      --line-color: #3A4050;
+      --fork-pre: #60A5FA; --fork-walk: #34D399;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #F0EDE6; --ink-soft: #D6D3CC; --body: #C4C0B8; --muted: #8A8680;
+    --accent: #F59E0B; --accent-light: #2A2010;
+    --ground: #0F1318; --surface: #181D24; --surface-alt: #1F252E;
+    --border: #2A3040; --border-strong: #3A4050;
+    --sys-web: #60A5FA; --sys-app: #FBBF24; --sys-venue: #34D399;
+    --sys-sso: #A78BFA; --sys-email: #F87171; --sys-admin: #94A3B8; --sys-api: #9CA3AF;
+    --tag-loyalty: #A78BFA; --tag-loyalty-bg: #1E1638;
+    --tag-discount: #34D399; --tag-discount-bg: #0A2618;
+    --tag-payment: #60A5FA; --tag-payment-bg: #0C1A30;
+    --line-color: #3A4050;
+    --fork-pre: #60A5FA; --fork-walk: #34D399;
+  }
+  :root[data-theme="light"] {
+    --ink: #1A2332; --ink-soft: #374151; --body: #44403C; --muted: #8B8578;
+    --accent: #B45309; --accent-light: #FEF3C7;
+    --ground: #FAF8F3; --surface: #FFFFFF; --surface-alt: #F3F0EA;
+    --border: #E5E1D8; --border-strong: #D1CCC2;
+    --sys-web: #2563EB; --sys-app: #D97706; --sys-venue: #059669;
+    --sys-sso: #7C3AED; --sys-email: #DC2626; --sys-admin: #475569; --sys-api: #6B7280;
+    --tag-loyalty: #7C3AED; --tag-loyalty-bg: #EDE9FE;
+    --tag-discount: #059669; --tag-discount-bg: #D1FAE5;
+    --tag-payment: #2563EB; --tag-payment-bg: #DBEAFE;
+    --line-color: #C9C3B8;
+    --fork-pre: #2563EB; --fork-walk: #059669;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--ff-body);
+    background: var(--ground);
+    color: var(--body);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: var(--page-max);
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  .header {
+    padding: 48px 0 32px;
+    border-bottom: 3px solid var(--ink);
+    margin-bottom: 32px;
+  }
+  .header-eyebrow {
+    font-family: var(--ff-display);
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 8px;
+  }
+  .header h1 {
+    font-family: var(--ff-display);
+    font-size: clamp(24px, 4vw, 34px);
+    font-weight: 800; line-height: 1.15;
+    color: var(--ink); letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .header p {
+    font-size: 15px; color: var(--ink-soft);
+    max-width: 580px;
+  }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    margin-bottom: 28px; padding: 14px 18px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .legend-group {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .legend-title {
+    font-family: var(--ff-display);
+    font-size: 9px; font-weight: 800;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .legend-items { display: flex; flex-wrap: wrap; gap: 6px; }
+  .legend-item {
+    display: flex; align-items: center; gap: 4px;
+    font-family: var(--ff-display); font-size: 10px;
+    color: var(--ink-soft); white-space: nowrap;
+  }
+  .legend-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  }
+
+  .journey { position: relative; }
+
+  .step {
+    position: relative;
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 0;
+    margin-bottom: 0;
+  }
+
+  .step-spine {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+  }
+
+  .step-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid var(--ground);
+    box-shadow: 0 0 0 2px var(--accent);
+    z-index: 2;
+    flex-shrink: 0;
+  }
+
+  .step-line {
+    flex: 1; width: 2px;
+    background: var(--line-color);
+  }
+
+  .step:last-child .step-line { display: none; }
+
+  .step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 8px 0;
+    overflow: hidden;
+  }
+
+  .step-header {
+    padding: 14px 18px 10px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .step-num {
+    font-family: var(--ff-display);
+    font-size: 10px; font-weight: 800;
+    color: var(--muted); letter-spacing: 0.06em;
+    flex-shrink: 0;
+  }
+
+  .step-title {
+    font-family: var(--ff-display);
+    font-size: 15px; font-weight: 800;
+    color: var(--ink); line-height: 1.2;
+  }
+
+  .step-action {
+    font-size: 13px; color: var(--body);
+    padding: 0 18px 10px;
+    max-width: 60ch;
+  }
+
+  .data-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .data-col {
+    padding: 10px 18px;
+    font-family: var(--ff-display);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .data-col:first-child {
+    border-right: 1px solid var(--border);
+  }
+
+  .data-label {
+    font-size: 9px; font-weight: 800;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 4px;
+  }
+
+  .data-col ul {
+    margin: 0; padding-left: 14px;
+    color: var(--body);
+  }
+
+  .data-col li { margin-bottom: 2px; }
+  .data-col li::marker { color: var(--border-strong); }
+
+  .sys-row {
+    border-top: 1px solid var(--border);
+    padding: 8px 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .sys-tag {
+    font-family: var(--ff-display);
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  .sys-web { background: color-mix(in srgb, var(--sys-web) 12%, transparent); color: var(--sys-web); }
+  .sys-app { background: color-mix(in srgb, var(--sys-app) 12%, transparent); color: var(--sys-app); }
+  .sys-venue { background: color-mix(in srgb, var(--sys-venue) 12%, transparent); color: var(--sys-venue); }
+  .sys-sso { background: color-mix(in srgb, var(--sys-sso) 12%, transparent); color: var(--sys-sso); }
+  .sys-email { background: color-mix(in srgb, var(--sys-email) 12%, transparent); color: var(--sys-email); }
+  .sys-admin { background: color-mix(in srgb, var(--sys-admin) 12%, transparent); color: var(--sys-admin); }
+  .sys-api { background: color-mix(in srgb, var(--sys-api) 12%, transparent); color: var(--sys-api); }
+
+  .feature-row {
+    border-top: 1px solid var(--border);
+    padding: 8px 18px;
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+
+  .feat-tag {
+    font-family: var(--ff-display);
+    font-size: 9px; font-weight: 800;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  .feat-loyalty { background: var(--tag-loyalty-bg); color: var(--tag-loyalty); }
+  .feat-discount { background: var(--tag-discount-bg); color: var(--tag-discount); }
+  .feat-payment { background: var(--tag-payment-bg); color: var(--tag-payment); }
+
+  .fork-label {
+    font-family: var(--ff-display);
+    font-size: 11px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 6px 18px;
+    margin: 8px 0 0;
+  }
+
+  .fork-pre .step-dot { box-shadow: 0 0 0 2px var(--fork-pre); background: var(--fork-pre); }
+  .fork-pre .step-card { border-left: 3px solid var(--fork-pre); }
+  .fork-pre .step-line { background: var(--fork-pre); opacity: 0.3; }
+
+  .fork-walk .step-dot { box-shadow: 0 0 0 2px var(--fork-walk); background: var(--fork-walk); }
+  .fork-walk .step-card { border-left: 3px solid var(--fork-walk); }
+  .fork-walk .step-line { background: var(--fork-walk); opacity: 0.3; }
+
+  .fork-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 8px 0;
+  }
+
+  .fork-column {
+    position: relative;
+  }
+
+  .fork-heading {
+    font-family: var(--ff-display);
+    font-size: 10px; font-weight: 800;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .fork-heading-pre {
+    background: color-mix(in srgb, var(--fork-pre) 10%, transparent);
+    color: var(--fork-pre);
+    border: 1px solid color-mix(in srgb, var(--fork-pre) 25%, transparent);
+  }
+
+  .fork-heading-walk {
+    background: color-mix(in srgb, var(--fork-walk) 10%, transparent);
+    color: var(--fork-walk);
+    border: 1px solid color-mix(in srgb, var(--fork-walk) 25%, transparent);
+  }
+
+  .fork-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .fork-card-pre { border-left: 3px solid var(--fork-pre); }
+  .fork-card-walk { border-left: 3px solid var(--fork-walk); }
+
+  .merge-bar {
+    text-align: center;
+    padding: 12px 0;
+    position: relative;
+  }
+
+  .merge-bar::before {
+    content: '';
+    position: absolute; top: 50%; left: 10%; right: 10%;
+    height: 1px; background: var(--line-color);
+  }
+
+  .merge-label {
+    font-family: var(--ff-display);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted);
+    background: var(--ground);
+    padding: 2px 12px;
+    position: relative;
+  }
+
+  @media (max-width: 640px) {
+    .data-panel { grid-template-columns: 1fr; }
+    .data-col:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+    .fork-split { grid-template-columns: 1fr; }
+    .step { grid-template-columns: 40px 1fr; }
+  }
+
+  @media print {
+    body { background: white; color: #1a1a1a; }
+    .page { max-width: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="header">
+    <div class="header-eyebrow">Ceroc Franchise Platform</div>
+    <h1>Dancer Journey Map</h1>
+    <p>End-to-end flow from event discovery to return visit. Each step shows data captured, data presented, systems involved, and where loyalty programmes and discount codes intersect.</p>
+  </div>
+
+  <div class="legend">
+    <div class="legend-group">
+      <div class="legend-title">Systems</div>
+      <div class="legend-items">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--sys-web)"></div> Website</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--sys-app)"></div> Member App</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--sys-venue)"></div> Venue App</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--sys-sso)"></div> SSO</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--sys-email)"></div> Email (Iterable)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--sys-admin)"></div> Admin App</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--sys-api)"></div> API</div>
+      </div>
+    </div>
+    <div class="legend-group">
+      <div class="legend-title">Features</div>
+      <div class="legend-items">
+        <div class="legend-item"><span class="feat-tag feat-loyalty">Loyalty</span></div>
+        <div class="legend-item"><span class="feat-tag feat-discount">Discount</span></div>
+        <div class="legend-item"><span class="feat-tag feat-payment">Payment</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="journey">
+
+    <div class="step">
+      <div class="step-spine"><div class="step-dot"></div><div class="step-line"></div></div>
+      <div class="step-card">
+        <div class="step-header">
+          <span class="step-num">01</span>
+          <span class="step-title">Discover an Event</span>
+        </div>
+        <div class="step-action">Dancer hears about a Ceroc event: sees it on the website, receives an Iterable email, follows a social media post, or hears through word of mouth.</div>
+        <div class="data-panel">
+          <div class="data-col">
+            <div class="data-label">Data presented</div>
+            <ul>
+              <li>Event name, date, time</li>
+              <li>Venue name and location</li>
+              <li>Starting price / "from &pound;X"</li>
+              <li>Event images and description</li>
+              <li>Territory / area name</li>
+            </ul>
+          </div>
+          <div class="data-col">
+            <div class="data-label">Data captured</div>
+            <ul>
+              <li>Page view (analytics)</li>
+              <li>Email open / click (if Iterable)</li>
+              <li>UTM parameters (campaign source)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="sys-row">
+          <span class="sys-tag sys-web">Website</span>
+          <span class="sys-tag sys-email">Iterable</span>
+          <span class="sys-tag sys-api">API</span>
+        </div>
+        <div class="feature-row">
+          <span class="feat-tag feat-discount">Discount &mdash; Promotional codes shared in email campaigns or social posts</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-spine"><div class="step-dot"></div><div class="step-line"></div></div>
+      <div class="step-card">
+        <div class="step-header">
+          <span class="step-num">02</span>
+          <span class="step-title">Browse &amp; Choose</span>
+        </div>
+        <div class="step-action">Dancer browses events by location and date. Views event details, entry types, pricing tiers, and available offers. Decides which event to attend.</div>
+        <div class="data-panel">
+          <div class="data-col">
+            <div class="data-label">Data presented</div>
+            <ul>
+              <li>Events list filtered by location/date/territory</li>
+              <li>Distance from dancer (if location shared)</li>
+              <li>Entry types with per-tier pricing</li>
+              <li>Available offers (bundles, packages)</li>
+              <li>Capacity / sold-out status</li>
+              <li>Venue details (address, rooms, facilities)</li>
+            </ul>
+          </div>
+          <div class="data-col">
+            <div class="data-label">Data captured</div>
+            <ul>
+              <li>Search filters applied</li>
+              <li>Events viewed (engagement tracking)</li>
+              <li>Favourited events / offers</li>
+            </ul>
+          </div>
+        </div>
+        <div class="sys-row">
+          <span class="sys-tag sys-app">Member App</span>
+          <span class="sys-tag sys-web">Website</span>
+          <span class="sys-tag sys-api">API</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-spine"><div class="step-dot"></div><div class="step-line"></div></div>
+      <div class="step-card">
+        <div class="step-header">
+          <span class="step-num">03</span>
+          <span class="step-title">Sign In or Create Account</span>
+        </div>
+        <div class="step-action">To book, the dancer must authenticate. Existing members sign in. New members discover their record via "Find Me" (matched by name, DOB, email) or register fresh. OTP verification confirms identity.</div>
+        <div class="data-panel">
+          <div class="data-col">
+            <div class="data-label">Data presented</div>
+            <ul>
+              <li>Sign-in form (email + password)</li>
+              <li>Find Me search (name, DOB, email, phone, postcode)</li>
+              <li>Matched member records (scored)</li>
+              <li>OTP input screen</li>
+              <li>Registration form (if no record found)</li>
+            </ul>
+          </div>
+          <div class="data-col">
+            <div class="data-label">Data captured</div>
+            <ul>
+              <li>Login credentials (email, password)</li>
+              <li>OTP verification result</li>
+              <li>New member: name, DOB, gender, email, phone, address</li>
+              <li>Member-to-record match (duplicate merge)</li>
+              <li>OAuth2 access token issued</li>
+            </ul>
+          </div>
+        </div>
+        <div class="sys-row">
+          <span class="sys-tag sys-sso">SSO</span>
+          <span class="sys-tag sys-api">API</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-spine"><div class="step-dot"></div><div class="step-line"></div></div>
+      <div>
+        <div class="merge-bar" style="padding:16px 0 8px;">
+          <span class="merge-label">Two paths to the event</span>
+        </div>
+
+        <div class="fork-split">
+          <div class="fork-column">
+            <div class="fork-heading fork-heading-pre">Pre-booked path</div>
+
+            <div class="fork-card fork-card-pre">
+              <div class="step-header">
+                <span class="step-num">4A</span>
+                <span class="step-title">Book &amp; Pay Online</span>
+              </div>
+              <div class="step-action">Dancer selects entry type or offer, applies a discount code if they have one, enters payment details, and confirms the booking.</div>
+              <div class="data-panel">
+                <div class="data-col">
+                  <div class="data-label">Data presented</div>
+                  <ul>
+                    <li>Entry types with prices</li>
+                    <li>Available offers (bundles)</li>
+                    <li>Discount code input field</li>
+                    <li>Cart summary + total</li>
+                    <li>Loyalty status: "You'll earn a stamp"</li>
+                    <li>Stripe payment form</li>
+                  </ul>
+                </div>
+                <div class="data-col">
+                  <div class="data-label">Data captured</div>
+                  <ul>
+                    <li>Selected entry type / offer</li>
+                    <li>Discount code (validated)</li>
+                    <li>Stripe payment intent + charge ID</li>
+                    <li>Booking record created (status: Confirmed)</li>
+                    <li>Transaction record with amount</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="sys-row">
+                <span class="sys-tag sys-app">Member App</span>
+                <span class="sys-tag sys-api">API</span>
+              </div>
+              <div class="feature-row">
+                <span class="feat-tag feat-discount">Discount &mdash; Code applied at checkout, validated against territory scope and usage limits</span>
+              </div>
+              <div class="feature-row">
+                <span class="feat-tag feat-loyalty">Loyalty &mdash; Stamp preview shown; stamp awarded after attendance confirmed</span>
+              </div>
+              <div class="feature-row">
+                <span class="feat-tag feat-payment">Payment &mdash; Stripe checkout: card payment, receipt generated, payment state stored on booking</span>
+              </div>
+            </div>
+
+            <div class="fork-card fork-card-pre">
+              <div class="step-header">
+                <span class="step-num">5A</span>
+                <span class="step-title">Receive Confirmation</span>
+              </div>
+              <div class="step-action">Booking confirmed on screen and by email. Includes QR code for check-in, event details, and receipt.</div>
+              <div class="data-panel">
+                <div class="data-col">
+                  <div class="data-label">Data presented</div>
+                  <ul>
+                    <li>Booking confirmation screen</li>
+                    <li>Email: event details, venue address, QR code</li>
+                    <li>Payment receipt (amount, method)</li>
+                    <li>Cancellation policy</li>
+                  </ul>
+                </div>
+                <div class="data-col">
+                  <div class="data-label">Data captured</div>
+                  <ul>
+                    <li>Confirmation email sent timestamp</li>
+                    <li>Email open tracking</li>
+                    <li>QR code generated (booking ref encoded)</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="sys-row">
+                <span class="sys-tag sys-email">Iterable</span>
+                <span class="sys-tag sys-app">Member App</span>
+              </div>
+            </div>
+
+            <div class="fork-card fork-card-pre">
+              <div class="step-header">
+                <span class="step-num">6A</span>
+                <span class="step-title">Get Reminder</span>
+              </div>
+              <div class="step-action">24 hours before the event: email and/or push notification with venue directions and a reminder to attend.</div>
+              <div class="data-panel">
+                <div class="data-col">
+                  <div class="data-label">Data presented</div>
+                  <ul>
+                    <li>Event name, time, venue</li>
+                    <li>Directions / map link</li>
+                    <li>"See you tomorrow" messaging</li>
+                  </ul>
+                </div>
+                <div class="data-col">
+                  <div class="data-label">Data captured</div>
+                  <ul>
+                    <li>Reminder sent timestamp</li>
+                    <li>Open / click tracking</li>
+                    <li>Push notification delivered</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="sys-row">
+                <span class="sys-tag sys-email">Iterable</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="fork-column">
+            <div class="fork-heading fork-heading-walk">Walk-in path</div>
+
+            <div class="fork-card fork-card-walk">
+              <div class="step-header">
+                <span class="step-num">4B</span>
+                <span class="step-title">Just Turn Up</span>
+              </div>
+              <div class="step-action">Dancer arrives at the venue without a booking. This is the current primary path for most Ceroc events &mdash; no pre-booking, no payment in advance.</div>
+              <div class="data-panel">
+                <div class="data-col">
+                  <div class="data-label">Data presented</div>
+                  <ul>
+                    <li>N/A (dancer arrives physically)</li>
+                  </ul>
+                </div>
+                <div class="data-col">
+                  <div class="data-label">Data captured</div>
+                  <ul>
+                    <li>N/A (no digital touchpoint until check-in)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="fork-card fork-card-walk" style="min-height:0;">
+              <div class="step-header">
+                <span class="step-num">5B&ndash;6B</span>
+                <span class="step-title">No Confirmation / Reminder</span>
+              </div>
+              <div class="step-action">Walk-ins receive no pre-event communication. After their first attendance, they enter the welcome series (if email is captured at the door).</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="merge-bar">
+          <span class="merge-label">Both paths converge at the door</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-spine"><div class="step-dot"></div><div class="step-line"></div></div>
+      <div class="step-card">
+        <div class="step-header">
+          <span class="step-num">07</span>
+          <span class="step-title">Check In at the Door</span>
+        </div>
+        <div class="step-action">Door staff find the dancer by QR scan or name search. Pre-booked members: booking matched, entry type pre-selected, payment status shown as pre-paid. Walk-ins: entry type selected, payment taken at door (cash or card).</div>
+        <div class="data-panel">
+          <div class="data-col">
+            <div class="data-label">Data presented to door staff</div>
+            <ul>
+              <li>Member name, photo, card number</li>
+              <li>Booking status (Confirmed / Pre-paid / Walk-in)</li>
+              <li>Entry type (pre-selected for bookings)</li>
+              <li>Member completeness check (email verified?)</li>
+              <li>Age check (under-16 alert)</li>
+              <li>Entry fee exemptions (EFE status, uses remaining)</li>
+              <li>Crew role (if assigned to event)</li>
+              <li>Loyalty stamp count and programme status</li>
+            </ul>
+          </div>
+          <div class="data-col">
+            <div class="data-label">Data captured</div>
+            <ul>
+              <li>Attendance record (member + event + entry type)</li>
+              <li>Payment method (pre-paid / cash / card at door)</li>
+              <li>Check-in timestamp</li>
+              <li>Booking status update: Confirmed &rarr; Attended</li>
+              <li>Email verification (door staff confirms accuracy)</li>
+              <li>New member creation (if first-time walk-in)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="sys-row">
+          <span class="sys-tag sys-venue">Venue App</span>
+          <span class="sys-tag sys-api">API</span>
+        </div>
+        <div class="feature-row">
+          <span class="feat-tag feat-loyalty">Loyalty &mdash; Stamp awarded on check-in (auto or manual). Milestone reached? Reward unlocked.</span>
+        </div>
+        <div class="feature-row">
+          <span class="feat-tag feat-discount">Discount &mdash; EFE (entry fee exemption) applied if valid. Promotional entry validated.</span>
+        </div>
+        <div class="feature-row">
+          <span class="feat-tag feat-payment">Payment &mdash; Walk-in: cash/card at door. Pre-booked: "Pre-paid" badge, no payment needed.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-spine"><div class="step-dot"></div><div class="step-line"></div></div>
+      <div class="step-card">
+        <div class="step-header">
+          <span class="step-num">08</span>
+          <span class="step-title">Attend the Event</span>
+        </div>
+        <div class="step-action">Dancer participates in the event: beginner lesson, freestyle, social dancing. This is the core product &mdash; everything else exists to get people here and bring them back.</div>
+        <div class="data-panel">
+          <div class="data-col">
+            <div class="data-label">Data presented (event dashboard)</div>
+            <ul>
+              <li>Live attendance count vs capacity</li>
+              <li>Gender breakdown</li>
+              <li>Booking vs walk-in ratio</li>
+              <li>Revenue to-date (pre-paid + door)</li>
+            </ul>
+          </div>
+          <div class="data-col">
+            <div class="data-label">Data captured</div>
+            <ul>
+              <li>Running attendance totals</li>
+              <li>Event expenses (DJ, venue hire, supplies)</li>
+              <li>Crew attendance and roles</li>
+            </ul>
+          </div>
+        </div>
+        <div class="sys-row">
+          <span class="sys-tag sys-venue">Venue App</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-spine"><div class="step-dot"></div><div class="step-line"></div></div>
+      <div class="step-card">
+        <div class="step-header">
+          <span class="step-num">09</span>
+          <span class="step-title">Post-Event Follow-Up</span>
+        </div>
+        <div class="step-action">After the event: door staff mark it as "Reporting" status. Iterable sends a follow-up email. First-time attendees get the welcome series. Loyalty stamp confirmation sent.</div>
+        <div class="data-panel">
+          <div class="data-col">
+            <div class="data-label">Data presented (to dancer)</div>
+            <ul>
+              <li>"Thanks for coming" email</li>
+              <li>Next local events (book your next one)</li>
+              <li>Loyalty update: "You earned a stamp! X more until reward"</li>
+              <li>First-timers: "Set up your account" welcome series</li>
+            </ul>
+          </div>
+          <div class="data-col">
+            <div class="data-label">Data captured</div>
+            <ul>
+              <li>Event status &rarr; Reporting</li>
+              <li>Attendance event fired to Iterable</li>
+              <li>Email open / click tracking</li>
+              <li>Welcome series engagement</li>
+            </ul>
+          </div>
+        </div>
+        <div class="sys-row">
+          <span class="sys-tag sys-venue">Venue App</span>
+          <span class="sys-tag sys-email">Iterable</span>
+          <span class="sys-tag sys-api">API</span>
+        </div>
+        <div class="feature-row">
+          <span class="feat-tag feat-loyalty">Loyalty &mdash; Stamp confirmation. Milestone messaging: "2 more stamps until free entry!"</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-spine"><div class="step-dot"></div><div class="step-line"></div></div>
+      <div class="step-card">
+        <div class="step-header">
+          <span class="step-num">10</span>
+          <span class="step-title">Complete, Invoice &amp; Report</span>
+        </div>
+        <div class="step-action">HQ generates invoices from service charges on attendance. Payment recorded. Franchisee dashboard shows territory KPIs. This step is invisible to the dancer but closes the business loop.</div>
+        <div class="data-panel">
+          <div class="data-col">
+            <div class="data-label">Data presented (to HQ / franchisee)</div>
+            <ul>
+              <li>Invoice: service charges calculated from attendance &times; rates</li>
+              <li>Revenue breakdown: pre-paid vs door payments</li>
+              <li>Expense summary (from venue app)</li>
+              <li>Franchisee dashboard: attendance trends, member growth, fill rates</li>
+              <li>Booking conversion: how many bookings became attendances</li>
+            </ul>
+          </div>
+          <div class="data-col">
+            <div class="data-label">Data captured</div>
+            <ul>
+              <li>Invoice record (Draft &rarr; Issued &rarr; Paid)</li>
+              <li>Payment received timestamp and amount</li>
+              <li>Service charge line items</li>
+              <li>Discount code usage report (codes used, revenue impact)</li>
+              <li>Loyalty programme report (stamps issued, rewards redeemed)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="sys-row">
+          <span class="sys-tag sys-admin">Admin App</span>
+          <span class="sys-tag sys-api">API</span>
+        </div>
+        <div class="feature-row">
+          <span class="feat-tag feat-discount">Discount &mdash; Usage report: which codes were redeemed, revenue impact, territory breakdown</span>
+        </div>
+        <div class="feature-row">
+          <span class="feat-tag feat-loyalty">Loyalty &mdash; Programme report: stamps issued this period, rewards redeemed, active cards</span>
+        </div>
+        <div class="feature-row">
+          <span class="feat-tag feat-payment">Payment &mdash; Reconciliation: Stripe payouts vs door cash vs invoice charges</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-spine"><div class="step-dot"></div><div class="step-line" style="display:none;"></div></div>
+      <div class="step-card">
+        <div class="step-header">
+          <span class="step-num">11</span>
+          <span class="step-title">Return &amp; Grow</span>
+        </div>
+        <div class="step-action">The dancer returns. They book their next event, earn more loyalty stamps, redeem rewards, and receive targeted communications based on their attendance history and territory. Lapsed dancers get win-back campaigns. The cycle repeats from step 2.</div>
+        <div class="data-panel">
+          <div class="data-col">
+            <div class="data-label">Data presented</div>
+            <ul>
+              <li>Upcoming events near them</li>
+              <li>Loyalty card progress (stamps, next reward)</li>
+              <li>Available rewards to redeem</li>
+              <li>Personalised offers based on attendance history</li>
+              <li>Targeted discount codes (Iterable segments)</li>
+              <li>Win-back emails (30/60/90 day lapse)</li>
+            </ul>
+          </div>
+          <div class="data-col">
+            <div class="data-label">Data captured</div>
+            <ul>
+              <li>Attendance frequency and recency</li>
+              <li>Churn risk score (days since last attendance)</li>
+              <li>Loyalty: stamps earned, rewards redeemed</li>
+              <li>Discount: targeted codes issued, redemption rate</li>
+              <li>Iterable engagement: email opens, click-throughs</li>
+              <li>Lifetime value: total events attended, total spend</li>
+            </ul>
+          </div>
+        </div>
+        <div class="sys-row">
+          <span class="sys-tag sys-app">Member App</span>
+          <span class="sys-tag sys-email">Iterable</span>
+          <span class="sys-tag sys-api">API</span>
+        </div>
+        <div class="feature-row">
+          <span class="feat-tag feat-loyalty">Loyalty &mdash; Full programme: card display, stamp progress, reward catalogue, redemption at door or online</span>
+        </div>
+        <div class="feature-row">
+          <span class="feat-tag feat-discount">Discount &mdash; Targeted codes: segment-based (lapsed dancers, VIPs, new members), territory-scoped</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>
