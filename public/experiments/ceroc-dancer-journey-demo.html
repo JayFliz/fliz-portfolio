@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ceroc — Dancer Journey · Playable Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+  html, body { margin: 0; background: #131020; }
+  .active\:scale-95:active { transform: scale(0.95); }
+  .active\:scale-98:active { transform: scale(0.98); }
+  .transition-transform { transition: transform 0.12s ease; }
+  .self-center { align-self: center; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useMemo, useRef, useEffect } = React;
+
+/* ============================================================
+   Ceroc — Dancer Journey, playable demo
+   Left: the dancer's (or door staff's) screen for each step.
+   Right: the data model filling up in real time + system trace.
+   Fork at step 4: pre-booked path vs walk-in path, converging
+   at the door — mirroring the journey map at
+   fliz.co.uk/experiments/ceroc-dancer-journey.html
+   ============================================================ */
+
+const C = {
+  ink: "#131020",
+  panel: "#1C1730",
+  panel2: "#241D3D",
+  line: "rgba(255,255,255,0.08)",
+  magenta: "#EE3D8F",
+  violet: "#9D7BFF",
+  amber: "#F6B93B",
+  mint: "#43D9A3",
+  red: "#FF6B6B",
+  text: "#F1EEFA",
+  muted: "#9C93BA",
+  dim: "#6B6390",
+};
+
+const SYSTEM_COLORS = {
+  Website: C.violet,
+  "Member App": C.magenta,
+  "Venue App": C.mint,
+  SSO: "#6FB7FF",
+  Iterable: C.amber,
+  "Admin App": "#FF9D6B",
+  API: C.dim,
+  Stripe: "#7A73FF",
+};
+
+/* ---------------- static reference data ---------------- */
+
+const TERRITORY = { id: "ter_essex", name: "Essex Coast", franchisee: "J. Harper" };
+
+const EVENTS = [
+  {
+    id: "evt_001",
+    name: "Tuesday Freestyle",
+    venue: "Chelmsford Social Club",
+    town: "Chelmsford",
+    date: "Tue 11 Aug",
+    time: "19:30",
+    capacity: 180,
+    booked: 42,
+    territoryId: "ter_essex",
+    entryTypes: [
+      { id: "ent_std", name: "Standard entry", price: 12.0 },
+      { id: "ent_mem", name: "Member rate", price: 10.0 },
+      { id: "ent_stu", name: "Student / NHS", price: 8.0 },
+    ],
+  },
+  {
+    id: "evt_002",
+    name: "Beginners Night",
+    venue: "The Kursaal",
+    town: "Southend-on-Sea",
+    date: "Thu 13 Aug",
+    time: "20:00",
+    capacity: 120,
+    booked: 96,
+    territoryId: "ter_essex",
+    entryTypes: [
+      { id: "ent_std", name: "Standard entry", price: 10.0 },
+      { id: "ent_first", name: "First-timer", price: 5.0 },
+    ],
+  },
+  {
+    id: "evt_003",
+    name: "Summer Party Night",
+    venue: "Towngate Theatre",
+    town: "Basildon",
+    date: "Sat 15 Aug",
+    time: "20:00",
+    capacity: 250,
+    booked: 187,
+    territoryId: "ter_essex",
+    entryTypes: [
+      { id: "ent_party", name: "Party entry", price: 15.0 },
+      { id: "ent_vip", name: "VIP + cloakroom", price: 22.0 },
+    ],
+  },
+];
+
+const DISCOUNT = {
+  id: "dsc_w25",
+  code: "WELCOME25",
+  pct: 25,
+  scope: "ter_essex",
+  usageLimit: 200,
+  used: 118,
+};
+
+const EXISTING_MEMBER = {
+  id: "mem_48211",
+  name: "Sarah Mitchell",
+  dob: "1988-04-12",
+  email: "sarah.m@example.com",
+  phone: "07700 900123",
+  postcode: "SS1 2AB",
+  cardNumber: "CE-048211",
+  emailVerified: false,
+  stamps: 9,
+};
+
+const SERVICE_CHARGE_RATE = 1.2; // £ per attendance, HQ invoice
+
+/* ---------------- small utils ---------------- */
+
+const gbp = (n) => `£${n.toFixed(2)}`;
+const uid = (p) => `${p}_${Math.random().toString(36).slice(2, 7)}`;
+const now = () => new Date().toLocaleTimeString("en-GB", { hour12: false });
+
+function hashStr(s) {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+/* Fake-but-stable QR from a booking ref */
+function QRBlock({ seed, size = 108 }) {
+  const n = 17;
+  const cells = useMemo(() => {
+    const h = hashStr(seed);
+    const out = [];
+    let s = h;
+    for (let i = 0; i < n * n; i++) {
+      s = (Math.imul(s, 1103515245) + 12345) >>> 0;
+      out.push((s >> 16) & 1);
+    }
+    return out;
+  }, [seed]);
+  const cell = size / n;
+  const finder = (r, c) =>
+    (r < 4 && c < 4) || (r < 4 && c >= n - 4) || (r >= n - 4 && c < 4);
+  return (
+    <div
+      aria-label={`QR code for ${seed}`}
+      style={{
+        width: size,
+        height: size,
+        display: "grid",
+        gridTemplateColumns: `repeat(${n}, 1fr)`,
+        background: "#fff",
+        padding: 6,
+        borderRadius: 8,
+      }}
+    >
+      {cells.map((v, i) => {
+        const r = Math.floor(i / n), c = i % n;
+        const on = finder(r, c)
+          ? (r % 3 !== 1 || c % 3 !== 1)
+          : v === 1;
+        return (
+          <div key={i} style={{ width: cell, height: cell, background: on ? "#131020" : "#fff" }} />
+        );
+      })}
+    </div>
+  );
+}
+
+/* ---------------- shared UI atoms ---------------- */
+
+function SysBadge({ name }) {
+  return (
+    <span
+      className="text-xs px-2 py-0.5 rounded-full mr-1.5 mb-1 inline-block"
+      style={{
+        color: SYSTEM_COLORS[name] || C.muted,
+        border: `1px solid ${SYSTEM_COLORS[name] || C.muted}55`,
+        background: `${SYSTEM_COLORS[name] || C.muted}14`,
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 10.5,
+        letterSpacing: "0.04em",
+      }}
+    >
+      {name}
+    </span>
+  );
+}
+
+/* ---------------- assumed data model (surfaced as hover cards) ---------------- */
+
+const SCHEMAS = {
+  loyaltyProgramme: {
+    title: "LoyaltyProgramme",
+    note: "Assumed: one national stamp-card programme. Stamp is triggered by confirmed attendance — never by booking alone.",
+    fields: [
+      ["id", "pk"],
+      ["name", "string"],
+      ["scope", "national | territoryId"],
+      ["stampTrigger", "attendance.confirmed"],
+      ["stampsRequired", "int — 10 here"],
+      ["rewardType", "free_entry | pct_off | item"],
+      ["rewardValidityDays", "int? — not modelled"],
+      ["oneStampPerDay", "bool — assumed true"],
+      ["active", "bool"],
+    ],
+  },
+  loyaltyCard: {
+    title: "LoyaltyCard",
+    note: "One active card per member. Stamps clamp at the milestone until redeemed. No expiry modelled.",
+    fields: [
+      ["id", "pk"],
+      ["memberId", "fk Member"],
+      ["programmeId", "fk LoyaltyProgramme"],
+      ["stamps", "int"],
+      ["rewardUnlocked", "bool"],
+      ["redeemedAt", "datetime? — door or online"],
+      ["history", "stamp[] {eventId, awardedAt}"],
+    ],
+  },
+  event: {
+    title: "Event",
+    note: "Single-session event in one territory. Entry types are embedded per event; 'booked' is denormalised for the capacity bar.",
+    fields: [
+      ["id", "pk"],
+      ["territoryId", "fk Territory"],
+      ["venueId", "fk Venue (address, rooms)"],
+      ["name / startsAt / endsAt", ""],
+      ["capacity", "int — flat, no per-room split"],
+      ["status", "Draft→Published→Live→Reporting→Complete"],
+      ["entryTypes", "EntryType[] (embedded)"],
+      ["expenses", "line[] — DJ, venue hire"],
+    ],
+  },
+  entryType: {
+    title: "EntryType",
+    note: "Per-event price list with flat prices, shared by online checkout and the door. Eligibility (student, first-timer) is door-staff judgement, not verified.",
+    fields: [
+      ["id", "pk"],
+      ["eventId", "fk Event"],
+      ["name", "string"],
+      ["price", "decimal £ — flat, no time bands"],
+      ["eligibility", "none | student | first_timer | vip"],
+      ["capacityCap", "int? — not modelled"],
+      ["availableOnline / atDoor", "bool — assumed both"],
+    ],
+  },
+  discountCode: {
+    title: "DiscountCode",
+    note: "Percentage-only, territory-scoped, one global usage limit. Validated at online checkout only — door-side promo entry is EFE, a separate concept.",
+    fields: [
+      ["id", "pk"],
+      ["code", "string, unique"],
+      ["pct", "int — no fixed-amount codes"],
+      ["scope", "territoryId | national"],
+      ["usageLimit / used", "int"],
+      ["perMemberLimit", "int? — not modelled"],
+      ["validFrom / validTo", "date? — not modelled"],
+      ["segment", "Iterable segment? — targeted codes"],
+    ],
+  },
+  member: {
+    title: "Member",
+    note: "Single record after a Find Me merge. emailVerified is flipped by door-staff read-back, not by a click-through link.",
+    fields: [
+      ["id", "pk"],
+      ["name / dob / phone / postcode", ""],
+      ["email", "string"],
+      ["emailVerified", "bool — set at the door"],
+      ["cardNumber", "1:1 with member"],
+      ["mergedFrom", "memberId[] — Find Me dedupe"],
+      ["firstAttendedAt", "datetime? — first-timer flag"],
+    ],
+  },
+  booking: {
+    title: "Booking",
+    note: "One entry type per booking — no multi-person basket. QR encodes the booking ref. Cancelled / NoShow exist in the enum but aren't exercised here.",
+    fields: [
+      ["id", "pk"],
+      ["memberId / eventId / entryTypeId", "fks"],
+      ["status", "Confirmed→Attended | Cancelled | NoShow"],
+      ["discountCodeId", "fk? DiscountCode"],
+      ["qrRef", "string — encoded in QR"],
+      ["source", "member_app | website"],
+    ],
+  },
+  transaction: {
+    title: "Transaction",
+    note: "One per online booking or door payment. Refunds not modelled. Stripe intent only exists for online payments.",
+    fields: [
+      ["id", "pk"],
+      ["amount / currency", "decimal · GBP"],
+      ["method", "stripe_card | door_cash | door_card"],
+      ["stripeIntentId", "string? — online only"],
+      ["bookingId / attendanceId", "fk? — one or the other"],
+      ["reconciledAt", "datetime? — step 10"],
+    ],
+  },
+  attendance: {
+    title: "Attendance",
+    note: "One per member per event. This is the pivotal record: it triggers the loyalty stamp, the follow-up email and the HQ service charge.",
+    fields: [
+      ["id", "pk"],
+      ["memberId / eventId / entryTypeId", "fks"],
+      ["payment", "pre-paid | cash | card"],
+      ["checkedInAt / checkedInBy", "datetime · doorStaffId"],
+      ["efeApplied", "bool"],
+      ["walkIn", "bool"],
+      ["syncedAt", "IndexedDB upload ≤30s"],
+    ],
+  },
+  invoice: {
+    title: "Invoice",
+    note: "HQ → franchisee. Flat service-charge rate × attendance, single line. A real model needs per-event line items and VAT.",
+    fields: [
+      ["id", "pk"],
+      ["territoryId", "fk Territory"],
+      ["period", "date range"],
+      ["lines", "lineItem[] {qty, rate, eventId?}"],
+      ["total", "decimal £"],
+      ["vat", "not modelled"],
+      ["status", "Draft→Issued→Paid"],
+      ["paidAt", "datetime?"],
+    ],
+  },
+};
+
+function InfoTip({ k, align = "left" }) {
+  const s = SCHEMAS[k];
+  if (!s) return null;
+  return (
+    <span className="tipwrap" style={{ position: "relative", display: "inline-block", verticalAlign: "middle" }}>
+      <button
+        className="tiptrigger"
+        aria-label={`Data model assumptions: ${s.title}`}
+        style={{
+          width: 15, height: 15, borderRadius: "50%", padding: 0, marginLeft: 6,
+          border: `1px solid ${C.violet}88`, background: "transparent", color: C.violet,
+          fontFamily: "'JetBrains Mono', monospace", fontSize: 9.5, lineHeight: "13px",
+          cursor: "help", verticalAlign: "middle",
+        }}
+      >
+        i
+      </button>
+      <span className="tip" role="tooltip" style={align === "right" ? { right: 0 } : { left: 0 }}>
+        <span style={{ display: "block", fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: "0.1em", textTransform: "uppercase", fontSize: 12, color: C.violet, marginBottom: 3 }}>
+          {s.title}
+        </span>
+        <span style={{ display: "block", fontSize: 11.5, color: C.muted, lineHeight: 1.5, marginBottom: 7 }}>{s.note}</span>
+        {s.fields.map(([f, t]) => (
+          <span key={f} style={{ display: "flex", gap: 6, fontFamily: "'JetBrains Mono', monospace", fontSize: 10, lineHeight: 1.7 }}>
+            <span style={{ color: C.text, flexShrink: 0 }}>{f}</span>
+            <span style={{ color: C.dim }}>{t}</span>
+          </span>
+        ))}
+      </span>
+    </span>
+  );
+}
+
+function Btn({ children, onClick, tone = "magenta", ghost, small, disabled, style }) {
+  const color = C[tone] || tone;
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`rounded-lg font-semibold transition-transform active:scale-95 ${small ? "px-3 py-1.5 text-sm" : "px-4 py-2.5"}`}
+      style={{
+        background: ghost ? "transparent" : disabled ? "#3A3355" : color,
+        color: ghost ? color : disabled ? C.dim : "#161226",
+        border: ghost ? `1px solid ${color}66` : "none",
+        cursor: disabled ? "not-allowed" : "pointer",
+        fontFamily: "'Barlow', sans-serif",
+        ...style,
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Card({ children, style, className = "" }) {
+  return (
+    <div
+      className={`rounded-xl p-4 ${className}`}
+      style={{ background: C.panel, border: `1px solid ${C.line}`, ...style }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Kicker({ children, color = C.magenta }) {
+  return (
+    <div
+      style={{
+        fontFamily: "'Barlow Condensed', sans-serif",
+        letterSpacing: "0.18em",
+        fontSize: 12,
+        color,
+        textTransform: "uppercase",
+        marginBottom: 4,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ---------------- journey rail ---------------- */
+
+const RAIL = [
+  { id: "discover", n: "01", label: "Discover" },
+  { id: "browse", n: "02", label: "Browse" },
+  { id: "auth", n: "03", label: "Sign in" },
+  { id: "fork", n: "04", label: "Fork", fork: true },
+  { id: "checkin", n: "07", label: "Door" },
+  { id: "attend", n: "08", label: "Attend" },
+  { id: "followup", n: "09", label: "Follow-up" },
+  { id: "invoice", n: "10", label: "Invoice" },
+  { id: "return", n: "11", label: "Return" },
+];
+
+const FORK_STEPS = {
+  booked: ["bookpay", "confirm", "reminder"],
+  walkin: ["walkin"],
+};
+
+function stepToRail(stepId) {
+  if (["fork", "bookpay", "confirm", "reminder", "walkin"].includes(stepId)) return "fork";
+  return stepId;
+}
+
+function JourneyRail({ stepId, path }) {
+  const activeRail = stepToRail(stepId);
+  const activeIdx = RAIL.findIndex((r) => r.id === activeRail);
+  return (
+    <div className="w-full overflow-x-auto pb-1" style={{ scrollbarWidth: "thin" }}>
+      <div className="flex items-center min-w-max gap-0 px-1">
+        {RAIL.map((r, i) => {
+          const done = i < activeIdx;
+          const active = i === activeIdx;
+          if (r.fork) {
+            const inBooked = ["bookpay", "confirm", "reminder"].includes(stepId);
+            const inWalkin = stepId === "walkin";
+            const lane = (label, sub, on, chosen, tone) => (
+              <div
+                className="px-2.5 py-1 rounded-md text-center"
+                style={{
+                  border: `1px solid ${on ? tone : chosen ? tone + "55" : C.line}`,
+                  background: on ? tone + "22" : "transparent",
+                  opacity: !path || chosen || on ? 1 : 0.35,
+                  minWidth: 110,
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontSize: 13,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: on ? tone : C.text,
+                  }}
+                >
+                  {label}
+                </div>
+                <div style={{ fontSize: 10, color: C.dim, fontFamily: "'JetBrains Mono', monospace" }}>{sub}</div>
+              </div>
+            );
+            return (
+              <div key="fork" className="flex items-center">
+                <Tick done={done} active={active} />
+                <div className="flex flex-col gap-1 mx-2">
+                  {lane("4A–6A Book & pay", "book · confirm · remind", inBooked, path === "booked", C.magenta)}
+                  {lane("4B Just turn up", "no digital touchpoint", inWalkin, path === "walkin", C.mint)}
+                </div>
+                <Connector done={done || ["checkin","attend","followup","invoice","return"].includes(stepId)} />
+              </div>
+            );
+          }
+          return (
+            <div key={r.id} className="flex items-center">
+              <div className="flex flex-col items-center" style={{ minWidth: 64 }}>
+                <Tick done={done} active={active} n={r.n} />
+                <div
+                  style={{
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontSize: 12.5,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: active ? C.magenta : done ? C.text : C.dim,
+                    marginTop: 3,
+                  }}
+                >
+                  {r.label}
+                </div>
+              </div>
+              {i < RAIL.length - 1 && <Connector done={done} />}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Tick({ done, active, n }) {
+  return (
+    <div
+      className="rounded-full flex items-center justify-center"
+      style={{
+        width: 26,
+        height: 26,
+        border: `2px solid ${active ? C.magenta : done ? C.mint : C.line}`,
+        background: active ? C.magenta + "22" : done ? C.mint + "18" : "transparent",
+        color: active ? C.magenta : done ? C.mint : C.dim,
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 10,
+        flexShrink: 0,
+      }}
+    >
+      {done ? "✓" : n || "•"}
+    </div>
+  );
+}
+
+function Connector({ done }) {
+  return (
+    <div
+      style={{
+        width: 26,
+        height: 2,
+        background: done ? C.mint + "66" : C.line,
+        margin: "0 2px",
+        alignSelf: "flex-start",
+        marginTop: 12,
+      }}
+    />
+  );
+}
+
+/* ---------------- data panel ---------------- */
+
+function Rec({ title, tone = C.violet, obj, fresh, schemaKey }) {
+  return (
+    <div
+      className="rounded-lg p-2.5 mb-2"
+      style={{
+        background: C.panel2,
+        border: `1px solid ${fresh ? tone : C.line}`,
+        boxShadow: fresh ? `0 0 0 1px ${tone}44, 0 0 18px ${tone}22` : "none",
+        transition: "box-shadow 0.6s, border-color 0.6s",
+      }}
+    >
+      <div className="flex items-center justify-between mb-1">
+        <span
+          style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            fontSize: 11.5,
+            color: tone,
+          }}
+        >
+          {title}
+          {schemaKey && <InfoTip k={schemaKey} />}
+        </span>
+        {fresh && (
+          <span style={{ fontSize: 9, color: tone, fontFamily: "'JetBrains Mono', monospace" }}>● new/updated</span>
+        )}
+      </div>
+      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10.5, lineHeight: 1.55, color: C.muted }}>
+        {Object.entries(obj).map(([k, v]) => (
+          <div key={k} className="flex gap-1">
+            <span style={{ color: C.dim }}>{k}:</span>
+            <span style={{ color: C.text, wordBreak: "break-all" }}>{String(v)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DataPanel({ db, trace, lastWrite }) {
+  const [tab, setTab] = useState("records");
+  const traceRef = useRef(null);
+  useEffect(() => {
+    if (tab === "trace" && traceRef.current) traceRef.current.scrollTop = traceRef.current.scrollHeight;
+  }, [trace, tab]);
+
+  const tabs = [
+    ["records", `Records`],
+    ["email", `Iterable (${db.emailEvents.length})`],
+    ["trace", `Trace (${trace.length})`],
+  ];
+
+  return (
+    <Card className="flex flex-col" style={{ minHeight: 0, height: "100%" }}>
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <Kicker color={C.violet}>Live data model</Kicker>
+          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 20, letterSpacing: "0.02em" }}>
+            BookingZapp records
+          </div>
+          <div style={{ fontSize: 10.5, color: C.dim, fontFamily: "'JetBrains Mono', monospace" }}>hover ⓘ for the assumed schema</div>
+        </div>
+        <div className="flex gap-1">
+          {tabs.map(([id, label]) => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              className="px-2.5 py-1 rounded-md"
+              style={{
+                fontSize: 11,
+                fontFamily: "'JetBrains Mono', monospace",
+                color: tab === id ? C.ink : C.muted,
+                background: tab === id ? C.violet : "transparent",
+                border: `1px solid ${tab === id ? C.violet : C.line}`,
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="overflow-y-auto pr-1" style={{ flex: 1, minHeight: 0 }}>
+        {tab === "records" && (
+          <>
+            {db.members.map((m) => (
+              <Rec key={m.id} title="Member" schemaKey="member" tone={C.magenta} fresh={lastWrite === m.id}
+                obj={{ id: m.id, name: m.name, card: m.cardNumber, email: m.email, emailVerified: m.emailVerified, dob: m.dob }} />
+            ))}
+            {db.loyalty.map((l) => (
+              <Rec key={l.id} title="Loyalty card" schemaKey="loyaltyCard" tone={C.amber} fresh={lastWrite === l.id}
+                obj={{ id: l.id, memberId: l.memberId, stamps: `${l.stamps} / ${l.milestone}`, rewardUnlocked: l.rewardUnlocked, redeemed: l.redeemed }} />
+            ))}
+            {db.bookings.map((b) => (
+              <Rec key={b.id} title="Booking" schemaKey="booking" tone={C.magenta} fresh={lastWrite === b.id}
+                obj={{ id: b.id, memberId: b.memberId, eventId: b.eventId, entryType: b.entryTypeName, status: b.status, discount: b.discountCode || "—", qrRef: b.qrRef || "—" }} />
+            ))}
+            {db.transactions.map((t) => (
+              <Rec key={t.id} title="Transaction" schemaKey="transaction" tone={"#7A73FF"} fresh={lastWrite === t.id}
+                obj={{ id: t.id, amount: gbp(t.amount), method: t.method, stripeIntent: t.stripeIntent || "—", bookingId: t.bookingId || "—" }} />
+            ))}
+            {db.discountRedemptions.map((d) => (
+              <Rec key={d.id} title="Discount redemption" schemaKey="discountCode" tone={C.violet} fresh={lastWrite === d.id}
+                obj={{ id: d.id, code: d.code, pct: d.pct + "%", scope: d.scope, saved: gbp(d.saved) }} />
+            ))}
+            {db.attendances.map((a) => (
+              <Rec key={a.id} title="Attendance" schemaKey="attendance" tone={C.mint} fresh={lastWrite === a.id}
+                obj={{ id: a.id, memberId: a.memberId, eventId: a.eventId, entryType: a.entryTypeName, payment: a.payment, checkedInAt: a.at }} />
+            ))}
+            {db.invoices.map((inv) => (
+              <Rec key={inv.id} title="Invoice (HQ → franchisee)" schemaKey="invoice" tone={"#FF9D6B"} fresh={lastWrite === inv.id}
+                obj={{ id: inv.id, territory: inv.territory, lines: inv.lines, total: gbp(inv.total), status: inv.status }} />
+            ))}
+            {db.members.length === 0 && (
+              <div className="text-sm mt-6 text-center" style={{ color: C.dim }}>
+                No records yet. Play the journey on the left — every action writes here.
+              </div>
+            )}
+          </>
+        )}
+
+        {tab === "email" && (
+          <>
+            {db.emailEvents.length === 0 && (
+              <div className="text-sm mt-6 text-center" style={{ color: C.dim }}>No Iterable events yet.</div>
+            )}
+            {db.emailEvents.map((e) => (
+              <div key={e.id} className="flex items-start gap-2 mb-2 rounded-lg p-2.5"
+                style={{ background: C.panel2, border: `1px solid ${lastWrite === e.id ? C.amber : C.line}` }}>
+                <span style={{ color: C.amber, fontSize: 13 }}>✉</span>
+                <div>
+                  <div style={{ fontSize: 12.5, color: C.text, fontWeight: 600 }}>{e.name}</div>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: C.dim }}>
+                    {e.kind} · {e.at}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
+
+        {tab === "trace" && (
+          <div ref={traceRef} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10.5 }}>
+            {trace.map((t, i) => (
+              <div key={i} className="flex gap-2 mb-1.5 items-baseline">
+                <span style={{ color: C.dim, flexShrink: 0 }}>{t.at}</span>
+                <span style={{ color: SYSTEM_COLORS[t.system] || C.muted, flexShrink: 0, minWidth: 74 }}>{t.system}</span>
+                <span style={{ color: C.muted }}>{t.action}</span>
+              </div>
+            ))}
+            {trace.length === 0 && <div style={{ color: C.dim }}>Trace is empty.</div>}
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+/* ---------------- phone / venue frame ---------------- */
+
+function Frame({ chrome, children }) {
+  const isVenue = chrome === "venue";
+  return (
+    <div
+      className="rounded-2xl overflow-hidden flex flex-col"
+      style={{
+        border: `1px solid ${isVenue ? C.mint + "55" : C.line}`,
+        background: C.panel,
+        minHeight: 0,
+        height: "100%",
+      }}
+    >
+      <div
+        className="flex items-center justify-between px-4 py-2"
+        style={{ background: isVenue ? C.mint + "14" : C.panel2, borderBottom: `1px solid ${C.line}` }}
+      >
+        <span
+          style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            fontSize: 12,
+            color: isVenue ? C.mint : C.magenta,
+          }}
+        >
+          {isVenue ? "Venue app · door staff" : chrome === "hq" ? "Admin app · HQ" : "Member app · dancer's phone"}
+        </span>
+        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: C.dim }}>
+          {isVenue ? "offline-first · sync 30s" : "signed " + (chrome === "hq" ? "in as HQ" : "session")}
+        </span>
+      </div>
+      <div className="p-4 overflow-y-auto" style={{ flex: 1, minHeight: 0 }}>{children}</div>
+    </div>
+  );
+}
+
+/* ============================================================
+   Main app
+   ============================================================ */
+
+function App() {
+  const [stepId, setStepId] = useState("discover");
+  const [path, setPath] = useState(null); // 'booked' | 'walkin'
+  const [channel, setChannel] = useState(null);
+  const [eventId, setEventId] = useState(null);
+  const [memberId, setMemberId] = useState(null);
+  const [isNewMember, setIsNewMember] = useState(false);
+  const [lastWrite, setLastWrite] = useState(null);
+  const [trace, setTrace] = useState([]);
+  const [db, setDb] = useState({
+    members: [], loyalty: [], bookings: [], transactions: [],
+    attendances: [], emailEvents: [], invoices: [], discountRedemptions: [],
+  });
+
+  const log = (system, action) =>
+    setTrace((t) => [...t, { system, action, at: now() }]);
+
+  const write = (table, rec) => {
+    setDb((d) => ({ ...d, [table]: [...d[table], rec] }));
+    setLastWrite(rec.id);
+  };
+  const update = (table, id, patch) => {
+    setDb((d) => ({ ...d, [table]: d[table].map((r) => (r.id === id ? { ...r, ...patch } : r)) }));
+    setLastWrite(id);
+  };
+
+  const event = EVENTS.find((e) => e.id === eventId);
+  const member = db.members.find((m) => m.id === memberId);
+  const loyalty = db.loyalty.find((l) => l.memberId === memberId);
+  const booking = db.bookings.find((b) => b.memberId === memberId && b.eventId === eventId);
+  const attendance = db.attendances.find((a) => a.memberId === memberId && a.eventId === eventId);
+  const invoice = db.invoices[0];
+
+  /* ---------- step actions ---------- */
+
+  const discover = (ch) => {
+    setChannel(ch);
+    if (ch === "email") {
+      write("emailEvents", { id: uid("evm"), name: "Campaign: 'Freestyle this week' — opened, clicked", kind: "campaign.click", at: now() });
+      log("Iterable", "email open + click tracked, UTM utm_source=iterable");
+    } else if (ch === "social") {
+      log("Website", "page view · utm_source=instagram utm_campaign=aug_freestyle");
+    } else {
+      log("Website", "organic page view captured (analytics)");
+    }
+    setStepId("browse");
+  };
+
+  const chooseEvent = (id) => {
+    setEventId(id);
+    log("Member App", `event viewed: ${id} · filters {territory: Essex Coast}`);
+    log("API", `GET /events?territory=ter_essex → 200`);
+    if (memberId) {
+      log("SSO", "existing session token still valid — auth skipped");
+      setStepId("fork");
+    } else {
+      setStepId("auth");
+    }
+  };
+
+  const authFindMe = () => {
+    const m = { ...EXISTING_MEMBER };
+    write("members", m);
+    write("loyalty", { id: uid("loy"), memberId: m.id, stamps: m.stamps, milestone: 10, rewardUnlocked: false, redeemed: false });
+    setMemberId(m.id);
+    setIsNewMember(false);
+    log("SSO", "Find Me: matched mem_48211 (score 0.94, name+DOB+postcode)");
+    log("SSO", "OTP verified · OAuth2 access token issued");
+    setStepId("fork");
+  };
+
+  const authRegister = () => {
+    const m = {
+      id: uid("mem"), name: "Alex Turner", dob: "1996-09-02",
+      email: "alex.t@example.com", phone: "07700 900456",
+      cardNumber: "CE-0" + Math.floor(50000 + Math.random() * 9999),
+      emailVerified: false, stamps: 0,
+    };
+    write("members", m);
+    write("loyalty", { id: uid("loy"), memberId: m.id, stamps: 0, milestone: 10, rewardUnlocked: false, redeemed: false });
+    setMemberId(m.id);
+    setIsNewMember(true);
+    log("SSO", "no match in Find Me → new member registered");
+    log("SSO", "OTP verified · OAuth2 access token issued");
+    setStepId("fork");
+  };
+
+  const pickPath = (p) => {
+    setPath(p);
+    if (p === "walkin") {
+      log("API", "no digital touchpoint — dancer will just turn up");
+      setStepId("walkin");
+    } else {
+      setStepId("bookpay");
+    }
+  };
+
+  const [entryTypeId, setEntryTypeId] = useState(null);
+  const [codeInput, setCodeInput] = useState("");
+  const [codeState, setCodeState] = useState(null); // 'ok' | 'bad'
+
+  const validateCode = () => {
+    const ok = codeInput.trim().toUpperCase() === DISCOUNT.code;
+    setCodeState(ok ? "ok" : "bad");
+    log("API", ok
+      ? `discount ${DISCOUNT.code} valid · scope=ter_essex · uses ${DISCOUNT.used}/${DISCOUNT.usageLimit}`
+      : `discount '${codeInput}' rejected (unknown code)`);
+  };
+
+  const chosenEntry = event?.entryTypes.find((e) => e.id === entryTypeId);
+  const discountApplied = codeState === "ok";
+  const total = chosenEntry ? chosenEntry.price * (discountApplied ? (100 - DISCOUNT.pct) / 100 : 1) : 0;
+
+  const payOnline = () => {
+    const bId = uid("bkg");
+    const intent = "pi_" + Math.random().toString(36).slice(2, 10);
+    write("bookings", {
+      id: bId, memberId, eventId, entryTypeName: chosenEntry.name,
+      status: "Confirmed", discountCode: discountApplied ? DISCOUNT.code : null,
+      qrRef: null,
+    });
+    write("transactions", { id: uid("txn"), amount: total, method: "stripe_card", stripeIntent: intent, bookingId: bId });
+    if (discountApplied) {
+      write("discountRedemptions", {
+        id: uid("red"), code: DISCOUNT.code, pct: DISCOUNT.pct, scope: "ter_essex",
+        saved: chosenEntry.price - total,
+      });
+    }
+    log("Stripe", `payment intent ${intent} → succeeded (${gbp(total)})`);
+    log("API", `booking ${bId} created · status Confirmed`);
+    setStepId("confirm");
+    setTimeout(() => {
+      const qr = "CB-" + bId.slice(4).toUpperCase();
+      update("bookings", bId, { qrRef: qr });
+      write("emailEvents", { id: uid("evm"), name: "Booking confirmation + QR + receipt", kind: "transactional.sent", at: now() });
+      log("Iterable", "confirmation email sent (QR + receipt + cancellation policy)");
+    }, 400);
+  };
+
+  const sendReminder = () => {
+    write("emailEvents", { id: uid("evm"), name: "T-24h reminder · directions + 'see you tomorrow'", kind: "transactional.sent", at: now() });
+    log("Iterable", "reminder push + email delivered, open tracked");
+    setStepId("checkin");
+  };
+
+  /* ---- door check-in ---- */
+  const [doorEntryId, setDoorEntryId] = useState(null);
+  const [doorPay, setDoorPay] = useState(null);
+  const [emailConfirmed, setEmailConfirmed] = useState(false);
+  const [scanned, setScanned] = useState(false);
+
+  const doCheckIn = () => {
+    const entry = path === "booked" ? booking.entryTypeName : event.entryTypes.find((e) => e.id === doorEntryId)?.name;
+    const payment = path === "booked" ? "pre-paid" : doorPay;
+    const aId = uid("att");
+    write("attendances", { id: aId, memberId, eventId, entryTypeName: entry, payment, at: now() });
+    if (path === "booked") {
+      update("bookings", booking.id, { status: "Attended" });
+      log("Venue App", `booking ${booking.id}: Confirmed → Attended`);
+    } else {
+      write("transactions", { id: uid("txn"), amount: event.entryTypes.find((e) => e.id === doorEntryId).price, method: `door_${doorPay}`, stripeIntent: null, bookingId: null });
+      log("Venue App", `door payment recorded (${doorPay})`);
+    }
+    if (emailConfirmed) {
+      update("members", memberId, { emailVerified: true });
+      log("Venue App", "email accuracy confirmed at door → emailVerified: true");
+    }
+    const newStamps = loyalty.stamps + 1;
+    const unlocked = newStamps >= loyalty.milestone;
+    update("loyalty", loyalty.id, { stamps: unlocked ? loyalty.milestone : newStamps, rewardUnlocked: unlocked });
+    log("Venue App", unlocked
+      ? `loyalty stamp awarded → ${newStamps}/10 · MILESTONE: free entry unlocked`
+      : `loyalty stamp awarded → ${newStamps}/10`);
+    log("API", `attendance ${aId} queued in IndexedDB · will sync ≤30s`);
+    setStepId("attend");
+  };
+
+  /* ---- follow-up / invoice ---- */
+  const runFollowUp = () => {
+    log("Venue App", `event ${eventId} status → Reporting`);
+    log("API", "attendance event fired to Iterable");
+    write("emailEvents", { id: uid("evm"), name: "'Thanks for coming' + next local events", kind: "journey.sent", at: now() });
+    const l = db.loyalty.find((x) => x.memberId === memberId);
+    write("emailEvents", {
+      id: uid("evm"),
+      name: l.rewardUnlocked
+        ? "Loyalty: 'Reward unlocked — free entry on us!'"
+        : `Loyalty: 'You earned a stamp — ${l.milestone - l.stamps} more to free entry'`,
+      kind: "journey.sent", at: now(),
+    });
+    if (isNewMember) {
+      write("emailEvents", { id: uid("evm"), name: "Welcome series 1/4 · 'Set up your account'", kind: "journey.enrolled", at: now() });
+      log("Iterable", "first-timer enrolled in welcome series");
+    }
+    setStepId("invoice");
+  };
+
+  const attendCount = 1 + 68; // dancer + simulated others tonight
+  const generateInvoice = () => {
+    const total = attendCount * SERVICE_CHARGE_RATE;
+    write("invoices", {
+      id: uid("inv"), territory: TERRITORY.name,
+      lines: `${attendCount} attendances × ${gbp(SERVICE_CHARGE_RATE)}`,
+      total, status: "Draft",
+    });
+    log("Admin App", `invoice drafted from service charges (${attendCount} × ${gbp(SERVICE_CHARGE_RATE)})`);
+  };
+  const issueInvoice = () => { update("invoices", invoice.id, { status: "Issued" }); log("Admin App", "invoice Draft → Issued, emailed to franchisee"); };
+  const payInvoice = () => { update("invoices", invoice.id, { status: "Paid" }); log("Admin App", "payment received · invoice Issued → Paid"); setStepId("return"); };
+
+  const restartLoop = () => {
+    setStepId("browse");
+    setPath(null); setEventId(null); setEntryTypeId(null); setCodeInput(""); setCodeState(null);
+    setDoorEntryId(null); setDoorPay(null); setEmailConfirmed(false); setScanned(false);
+    log("Member App", "the cycle repeats — dancer returns to step 02");
+  };
+
+  const resetAll = () => window.location.reload();
+
+  /* ---------- step screens ---------- */
+
+  const spend = db.transactions.reduce((s, t) => s + t.amount, 0);
+
+  const screen = () => {
+    switch (stepId) {
+      case "discover":
+        return (
+          <Frame chrome="member">
+            <Kicker>Step 01 · Discover an event</Kicker>
+            <h2 style={h2}>How does the dancer hear about Ceroc tonight?</h2>
+            <p style={pMuted}>Each channel captures different data before anyone signs in.</p>
+            <div className="grid gap-2.5 mt-4">
+              {[
+                ["email", "Iterable email campaign", "Open/click tracked · carries code WELCOME25", C.amber],
+                ["social", "Instagram post", "UTM parameters captured on landing", C.violet],
+                ["website", "Found the website", "Anonymous page view (analytics)", C.magenta],
+              ].map(([id, t, s, tone]) => (
+                <button key={id} onClick={() => discover(id)} className="text-left rounded-xl p-3.5 transition-transform active:scale-98"
+                  style={{ background: C.panel2, border: `1px solid ${tone}44`, cursor: "pointer" }}>
+                  <div style={{ color: tone, fontWeight: 700, fontSize: 15 }}>{t}</div>
+                  <div style={{ ...pMuted, fontSize: 12.5 }}>{s}</div>
+                </button>
+              ))}
+            </div>
+            <div className="mt-4">{["Website", "Iterable", "API"].map((s) => <SysBadge key={s} name={s} />)}</div>
+          </Frame>
+        );
+
+      case "browse":
+        return (
+          <Frame chrome="member">
+            <Kicker>Step 02 · Browse & choose</Kicker>
+            <h2 style={h2}>Events near {EXISTING_MEMBER.postcode.split(" ")[0]} · {TERRITORY.name}<InfoTip k="event" /></h2>
+            {channel === "email" && (
+              <div className="rounded-lg px-3 py-2 mt-2 text-sm" style={{ background: C.amber + "18", border: `1px solid ${C.amber}44`, color: C.amber }}>
+                ✉ From your email: code <b>WELCOME25</b> — 25% off, this territory only
+              </div>
+            )}
+            <div className="grid gap-2.5 mt-4">
+              {EVENTS.map((e) => {
+                const pct = Math.round((e.booked / e.capacity) * 100);
+                return (
+                  <button key={e.id} onClick={() => chooseEvent(e.id)} className="text-left rounded-xl p-3.5"
+                    style={{ background: C.panel2, border: `1px solid ${C.line}`, cursor: "pointer" }}>
+                    <div className="flex justify-between items-baseline">
+                      <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 19, letterSpacing: "0.02em" }}>{e.name}</span>
+                      <span style={{ color: C.magenta, fontWeight: 700 }}>from {gbp(Math.min(...e.entryTypes.map((x) => x.price)))}</span>
+                    </div>
+                    <div style={{ ...pMuted, fontSize: 12.5 }}>{e.venue}, {e.town} · {e.date} {e.time}</div>
+                    <div className="mt-2 h-1.5 rounded-full" style={{ background: C.ink }}>
+                      <div className="h-1.5 rounded-full" style={{ width: pct + "%", background: pct > 80 ? C.red : C.mint }} />
+                    </div>
+                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: C.dim, marginTop: 3 }}>
+                      {e.booked}/{e.capacity} booked{pct > 80 ? " · nearly full" : ""}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-4">{["Member App", "Website", "API"].map((s) => <SysBadge key={s} name={s} />)}</div>
+          </Frame>
+        );
+
+      case "auth":
+        return (
+          <Frame chrome="member">
+            <Kicker>Step 03 · Sign in or create account</Kicker>
+            <h2 style={h2}>Booking {event?.name} needs an identity</h2>
+            <p style={pMuted}>SSO issues an OAuth2 token either way. "Find Me" avoids duplicate member records.</p>
+            <div className="grid gap-2.5 mt-4">
+              <button onClick={authFindMe} className="text-left rounded-xl p-3.5" style={{ background: C.panel2, border: `1px solid ${C.magenta}44`, cursor: "pointer" }}>
+                <div style={{ color: C.magenta, fontWeight: 700 }}>Find Me → Sarah Mitchell</div>
+                <div style={{ ...pMuted, fontSize: 12.5 }}>
+                  Matched on name + DOB + postcode · score 0.94 · card CE-048211 · <b style={{ color: C.amber }}>9/10 loyalty stamps</b> · OTP to verify
+                </div>
+              </button>
+              <button onClick={authRegister} className="text-left rounded-xl p-3.5" style={{ background: C.panel2, border: `1px solid ${C.mint}44`, cursor: "pointer" }}>
+                <div style={{ color: C.mint, fontWeight: 700 }}>No record found → register Alex Turner</div>
+                <div style={{ ...pMuted, fontSize: 12.5 }}>Name, DOB, email, phone captured · fresh loyalty card at 0/10 · first-timer flag</div>
+              </button>
+            </div>
+            <div className="mt-4">{["SSO", "API"].map((s) => <SysBadge key={s} name={s} />)}</div>
+          </Frame>
+        );
+
+      case "fork":
+        return (
+          <Frame chrome="member">
+            <Kicker>Step 04 · Two paths to the event</Kicker>
+            <h2 style={h2}>Hi {member?.name.split(" ")[0]} — book ahead, or just turn up?</h2>
+            <p style={pMuted}>Walk-in is still the primary path at most Ceroc nights. Both converge at the door.</p>
+            <div className="grid gap-2.5 mt-4">
+              <button onClick={() => pickPath("booked")} className="text-left rounded-xl p-4" style={{ background: C.magenta + "14", border: `1px solid ${C.magenta}66`, cursor: "pointer" }}>
+                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 20, color: C.magenta }}>4A · BOOK & PAY ONLINE</div>
+                <div style={{ ...pMuted, fontSize: 12.5 }}>Stripe checkout · discount codes · QR confirmation · T-24h reminder</div>
+              </button>
+              <button onClick={() => pickPath("walkin")} className="text-left rounded-xl p-4" style={{ background: C.mint + "10", border: `1px solid ${C.mint}55`, cursor: "pointer" }}>
+                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 20, color: C.mint }}>4B · JUST TURN UP</div>
+                <div style={{ ...pMuted, fontSize: 12.5 }}>No digital touchpoint until the door · pay cash or card on arrival</div>
+              </button>
+            </div>
+          </Frame>
+        );
+
+      case "bookpay":
+        return (
+          <Frame chrome="member">
+            <Kicker>Step 4A · Book & pay online</Kicker>
+            <h2 style={h2}>{event.name} — {event.date}</h2>
+            <div style={{ ...pMuted, fontSize: 12, marginTop: 10 }}>Entry type<InfoTip k="entryType" /></div>
+            <div className="grid gap-2 mt-1">
+              {event.entryTypes.map((e) => (
+                <button key={e.id} onClick={() => setEntryTypeId(e.id)} className="flex justify-between rounded-lg px-3.5 py-2.5 text-left"
+                  style={{ background: entryTypeId === e.id ? C.magenta + "1E" : C.panel2, border: `1px solid ${entryTypeId === e.id ? C.magenta : C.line}`, cursor: "pointer", color: C.text }}>
+                  <span>{e.name}</span><span style={{ fontWeight: 700 }}>{gbp(e.price)}</span>
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2 mt-3">
+              <input value={codeInput} onChange={(e) => { setCodeInput(e.target.value); setCodeState(null); }}
+                placeholder={channel === "email" ? "Try WELCOME25 from your email" : "Discount code"}
+                className="flex-1 rounded-lg px-3 py-2 text-sm"
+                style={{ background: C.ink, border: `1px solid ${codeState === "ok" ? C.mint : codeState === "bad" ? C.red : C.line}`, color: C.text, outline: "none", fontFamily: "'JetBrains Mono', monospace" }} />
+              <Btn small tone="violet" onClick={validateCode} disabled={!codeInput}>Apply</Btn>
+              <span className="self-center"><InfoTip k="discountCode" align="right" /></span>
+            </div>
+            {codeState === "ok" && <div style={{ color: C.mint, fontSize: 12, marginTop: 5 }}>✓ {DISCOUNT.pct}% off — valid for {TERRITORY.name}, {DISCOUNT.usageLimit - DISCOUNT.used} uses left</div>}
+            {codeState === "bad" && <div style={{ color: C.red, fontSize: 12, marginTop: 5 }}>Code not recognised for this territory</div>}
+
+            <div className="rounded-lg p-3 mt-3" style={{ background: C.panel2, border: `1px solid ${C.line}` }}>
+              <div className="flex justify-between text-sm"><span style={{ color: C.muted }}>Cart total</span><span style={{ fontWeight: 700, fontSize: 17 }}>{gbp(total)}</span></div>
+              <div style={{ color: C.amber, fontSize: 12, marginTop: 3 }}>★ You'll earn a stamp — awarded after attendance is confirmed at the door<InfoTip k="loyaltyProgramme" /></div>
+            </div>
+            <Btn style={{ marginTop: 12, width: "100%" }} disabled={!chosenEntry} onClick={payOnline}>
+              Pay {chosenEntry ? gbp(total) : ""} with Stripe
+            </Btn>
+            <div className="mt-4">{["Member App", "Stripe", "API"].map((s) => <SysBadge key={s} name={s} />)}</div>
+          </Frame>
+        );
+
+      case "confirm":
+        return (
+          <Frame chrome="member">
+            <Kicker color={C.mint}>Step 5A · Confirmation</Kicker>
+            <h2 style={h2}>You're booked, {member?.name.split(" ")[0]} ✓</h2>
+            <div className="flex gap-4 items-center mt-3">
+              {booking?.qrRef ? <QRBlock seed={booking.qrRef} /> : <div style={{ width: 108, height: 108, borderRadius: 8, background: C.panel2, display: "flex", alignItems: "center", justifyContent: "center", color: C.dim, fontSize: 11 }}>generating…</div>}
+              <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.6 }}>
+                <div style={{ color: C.text, fontWeight: 700 }}>{event.name}</div>
+                {event.venue}, {event.town}<br />{event.date} · {event.time}<br />
+                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: C.violet }}>{booking?.qrRef || "…"}</span>
+              </div>
+            </div>
+            <p style={{ ...pMuted, marginTop: 12 }}>Confirmation email sent with QR, receipt and cancellation policy. Open tracking is on.</p>
+            <Btn style={{ marginTop: 10 }} onClick={() => setStepId("reminder")}>Continue → reminder</Btn>
+            <div className="mt-4">{["Iterable", "Member App"].map((s) => <SysBadge key={s} name={s} />)}</div>
+          </Frame>
+        );
+
+      case "reminder":
+        return (
+          <Frame chrome="member">
+            <Kicker color={C.amber}>Step 6A · Get reminder</Kicker>
+            <h2 style={h2}>Fast-forward to 24 hours before doors</h2>
+            <p style={pMuted}>Iterable sends email + push: event details, directions, "see you tomorrow".</p>
+            <Btn style={{ marginTop: 14 }} tone="amber" onClick={sendReminder}>Advance clock 24h → send reminder</Btn>
+            <div className="mt-4"><SysBadge name="Iterable" /></div>
+          </Frame>
+        );
+
+      case "walkin":
+        return (
+          <Frame chrome="member">
+            <Kicker color={C.mint}>Steps 4B–6B · Just turn up</Kicker>
+            <h2 style={h2}>Nothing happens — and that's the point</h2>
+            <p style={pMuted}>
+              No booking, no payment, no confirmation, no reminder. {member?.name.split(" ")[0]} simply arrives at {event.venue} on the night.
+              Their first digital touchpoint is the door.
+            </p>
+            <Btn style={{ marginTop: 14 }} tone="mint" onClick={() => setStepId("checkin")}>Arrive at the venue →</Btn>
+          </Frame>
+        );
+
+      case "checkin": {
+        const canConfirm = path === "booked" ? scanned : doorEntryId && doorPay;
+        return (
+          <Frame chrome="venue">
+            <Kicker color={C.mint}>Step 07 · Check in at the door</Kicker>
+            <h2 style={h2}>{path === "booked" ? "Scan the booking QR" : "Walk-in — find or take details"}</h2>
+
+            {path === "booked" ? (
+              <>
+                {!scanned ? (
+                  <Btn tone="mint" style={{ marginTop: 8 }} onClick={() => { setScanned(true); log("Venue App", `QR ${booking.qrRef} scanned → booking matched, entry pre-selected`); }}>
+                    ⌁ Scan QR {booking?.qrRef}
+                  </Btn>
+                ) : (
+                  <div className="rounded-lg p-3 mt-2" style={{ background: C.mint + "12", border: `1px solid ${C.mint}44` }}>
+                    <div style={{ color: C.mint, fontWeight: 700 }}>{member.name} · {member.cardNumber}</div>
+                    <div style={{ fontSize: 12.5, color: C.muted }}>Booking Confirmed · {booking.entryTypeName} · <b style={{ color: C.mint }}>PRE-PAID</b></div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="rounded-lg p-3 mt-2" style={{ background: C.panel2, border: `1px solid ${C.line}` }}>
+                  <div style={{ fontSize: 12, color: C.dim, fontFamily: "'JetBrains Mono', monospace" }}>name search: "{member?.name.toLowerCase()}"</div>
+                  <div style={{ color: C.text, fontWeight: 700, marginTop: 2 }}>{member?.name} · {member?.cardNumber}</div>
+                </div>
+                <div style={{ ...pMuted, fontSize: 12, marginTop: 10, marginBottom: 4 }}>Entry type<InfoTip k="entryType" /></div>
+                <div className="flex flex-wrap gap-2">
+                  {event.entryTypes.map((e) => (
+                    <Btn key={e.id} small ghost={doorEntryId !== e.id} tone="mint" onClick={() => setDoorEntryId(e.id)}>{e.name} {gbp(e.price)}</Btn>
+                  ))}
+                </div>
+                <div style={{ ...pMuted, fontSize: 12, marginTop: 10, marginBottom: 4 }}>Payment at door</div>
+                <div className="flex gap-2">
+                  {["cash", "card"].map((p) => <Btn key={p} small ghost={doorPay !== p} tone="mint" onClick={() => setDoorPay(p)}>{p}</Btn>)}
+                </div>
+              </>
+            )}
+
+            <div className="rounded-lg p-3 mt-3" style={{ background: C.panel2, border: `1px solid ${C.line}`, fontSize: 12.5 }}>
+              <div style={{ color: C.dim, fontFamily: "'JetBrains Mono', monospace", fontSize: 10.5, marginBottom: 5 }}>eligibility & completeness checks</div>
+              <div style={{ color: C.mint }}>✓ Age check — over 16</div>
+              <div style={{ color: C.mint }}>✓ EFE — none on file, standard entry</div>
+              <div style={{ color: C.mint }}>✓ Crew — not rostered tonight</div>
+              <div style={{ color: C.amber, marginTop: 2 }}>
+                ⚠ Email unverified ·{" "}
+                <label style={{ cursor: "pointer" }}>
+                  <input type="checkbox" checked={emailConfirmed} onChange={(e) => setEmailConfirmed(e.target.checked)} style={{ accentColor: C.mint, marginRight: 4 }} />
+                  read back "{member?.email}" — correct
+                </label>
+              </div>
+              <div style={{ color: C.amber, marginTop: 2 }}>★ Loyalty {loyalty?.stamps}/10 — this check-in {loyalty?.stamps === 9 ? "hits the milestone" : "awards a stamp"}<InfoTip k="loyaltyProgramme" align="right" /></div>
+            </div>
+
+            <Btn tone="mint" style={{ marginTop: 12, width: "100%" }} disabled={!canConfirm} onClick={doCheckIn}>
+              Record attendance {path === "walkin" && doorEntryId ? `· take ${gbp(event.entryTypes.find((e) => e.id === doorEntryId).price)} ${doorPay || ""}` : ""}
+            </Btn>
+            <div className="mt-4">{["Venue App", "API"].map((s) => <SysBadge key={s} name={s} />)}</div>
+          </Frame>
+        );
+      }
+
+      case "attend":
+        return (
+          <Frame chrome="venue">
+            <Kicker color={C.mint}>Step 08 · Attend the event</Kicker>
+            <h2 style={h2}>Live event dashboard — this is the product</h2>
+            {loyalty?.rewardUnlocked && (
+              <div className="rounded-lg px-3 py-2 mt-2" style={{ background: C.amber + "1A", border: `1px solid ${C.amber}66`, color: C.amber, fontSize: 13 }}>
+                ★ Milestone hit at the door — {member.name.split(" ")[0]}'s next entry is free.
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-2.5 mt-3">
+              {[
+                ["Attendance", `${attendCount} / ${event.capacity}`],
+                ["Booked vs walk-in", path === "booked" ? "31% / 69%" : "29% / 71%"],
+                ["Revenue to-date", gbp(attendCount * 10.4)],
+                ["Gender split", "54% / 46%"],
+              ].map(([k, v]) => (
+                <div key={k} className="rounded-lg p-3" style={{ background: C.panel2, border: `1px solid ${C.line}` }}>
+                  <div style={{ fontSize: 11, color: C.dim }}>{k}</div>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 24, color: C.text }}>{v}</div>
+                </div>
+              ))}
+            </div>
+            <p style={{ ...pMuted, marginTop: 10, fontSize: 12.5 }}>Crew roles and event expenses (DJ, venue hire) are logged here too — they feed step 10.</p>
+            <Btn tone="mint" style={{ marginTop: 10 }} onClick={runFollowUp}>End of night → run follow-up</Btn>
+            <div className="mt-4"><SysBadge name="Venue App" /></div>
+          </Frame>
+        );
+
+      case "followup":
+        return null; // transitions straight through runFollowUp
+
+      case "invoice":
+        return (
+          <Frame chrome="hq">
+            <Kicker color="#FF9D6B">Step 10 · Complete, invoice & report</Kicker>
+            <h2 style={h2}>Invisible to the dancer — closes the business loop<InfoTip k="invoice" /></h2>
+            <p style={pMuted}>Service charges = attendance × {gbp(SERVICE_CHARGE_RATE)}. Reconciled against Stripe payouts, door cash, discount usage and loyalty reports.</p>
+            {!invoice ? (
+              <Btn tone="#FF9D6B" style={{ marginTop: 12 }} onClick={generateInvoice}>Generate invoice from {attendCount} attendances</Btn>
+            ) : (
+              <div className="rounded-lg p-3.5 mt-3" style={{ background: C.panel2, border: `1px solid #FF9D6B44` }}>
+                <div className="flex justify-between"><span style={{ color: C.muted }}>{invoice.lines}</span><b>{gbp(invoice.total)}</b></div>
+                <div className="flex items-center gap-2 mt-3">
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: invoice.status === "Paid" ? C.mint : C.amber }}>
+                    {["Draft", "Issued", "Paid"].map((s, i) => (
+                      <span key={s} style={{ opacity: ["Draft","Issued","Paid"].indexOf(invoice.status) >= i ? 1 : 0.3 }}>
+                        {s}{i < 2 ? " → " : ""}
+                      </span>
+                    ))}
+                  </span>
+                  <span className="flex-1" />
+                  {invoice.status === "Draft" && <Btn small tone="amber" onClick={issueInvoice}>Issue</Btn>}
+                  {invoice.status === "Issued" && <Btn small tone="mint" onClick={payInvoice}>Mark paid</Btn>}
+                  {invoice.status === "Paid" && <Btn small tone="mint" onClick={() => setStepId("return")}>Continue →</Btn>}
+                </div>
+              </div>
+            )}
+            <div className="mt-4">{["Admin App", "API"].map((s) => <SysBadge key={s} name={s} />)}</div>
+          </Frame>
+        );
+
+      case "return":
+        return (
+          <Frame chrome="member">
+            <Kicker>Step 11 · Return & grow</Kicker>
+            <h2 style={h2}>{member?.name.split(" ")[0]} comes back — the cycle repeats</h2>
+            <div className="grid grid-cols-2 gap-2.5 mt-3">
+              {[
+                ["Events attended", db.attendances.filter((a) => a.memberId === memberId).length],
+                ["Lifetime spend", gbp(spend)],
+                ["Loyalty", loyalty?.rewardUnlocked ? "Reward ready ★" : `${loyalty?.stamps}/10 stamps`],
+                ["Churn risk", "Low · attended this week"],
+              ].map(([k, v]) => (
+                <div key={k} className="rounded-lg p-3" style={{ background: C.panel2, border: `1px solid ${C.line}` }}>
+                  <div style={{ fontSize: 11, color: C.dim }}>{k}</div>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 21 }}>{v}</div>
+                </div>
+              ))}
+            </div>
+            <p style={{ ...pMuted, marginTop: 10, fontSize: 12.5 }}>
+              Iterable segments now target them with territory-scoped codes; if they lapse, win-back fires at 30/60/90 days.
+            </p>
+            <div className="flex gap-2 mt-3">
+              <Btn onClick={restartLoop}>Loop back to step 02 →</Btn>
+              <Btn ghost tone="violet" onClick={resetAll}>Reset demo</Btn>
+            </div>
+            <div className="mt-4">{["Member App", "Iterable", "API"].map((s) => <SysBadge key={s} name={s} />)}</div>
+          </Frame>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", background: C.ink, color: C.text, fontFamily: "'Barlow', sans-serif" }}>
+      <style>{`
+                * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-thumb { background: #35305A; border-radius: 4px; }
+        button:focus-visible, input:focus-visible { outline: 2px solid ${C.violet}; outline-offset: 2px; }
+        .tipwrap .tip { display: none; position: absolute; top: calc(100% + 6px); z-index: 60; width: 272px;
+          background: ${C.panel2}; border: 1px solid ${C.violet}55; border-radius: 10px; padding: 10px 12px;
+          box-shadow: 0 12px 32px rgba(0,0,0,0.55); text-align: left; }
+        .tipwrap:hover .tip, .tipwrap:focus-within .tip { display: block; }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+      `}</style>
+
+      <header className="px-4 pt-4 pb-2 max-w-6xl mx-auto">
+        <div className="flex items-baseline justify-between flex-wrap gap-2">
+          <div>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: "0.22em", fontSize: 12, color: C.violet, textTransform: "uppercase" }}>
+              Ceroc franchise platform · playable demo
+            </div>
+            <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: "clamp(26px, 4vw, 38px)", letterSpacing: "0.01em", margin: 0, lineHeight: 1.05 }}>
+              Dancer Journey <span style={{ color: C.magenta }}>— from discovery to return visit</span>
+            </h1>
+          </div>
+          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10.5, color: C.dim }}>
+            website · member app · sso · venue app · iterable · admin app
+          </div>
+        </div>
+        <div className="mt-3">
+          <JourneyRail stepId={stepId} path={path} />
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-4 pb-6 grid gap-4 lg:grid-cols-2" style={{ height: "calc(100vh - 150px)", minHeight: 520 }}>
+        <div style={{ minHeight: 0 }}>{screen()}</div>
+        <div style={{ minHeight: 0 }} className="hidden lg:block">
+          <DataPanel db={db} trace={trace} lastWrite={lastWrite} />
+        </div>
+        <div className="lg:hidden" style={{ minHeight: 380 }}>
+          <DataPanel db={db} trace={trace} lastWrite={lastWrite} />
+        </div>
+      </main>
+    </div>
+  );
+}
+
+const h2 = {
+  fontFamily: "'Barlow Condensed', sans-serif",
+  fontSize: 23,
+  letterSpacing: "0.01em",
+  margin: "2px 0 4px",
+  lineHeight: 1.15,
+};
+const pMuted = { color: "#9C93BA", fontSize: 13.5, lineHeight: 1.55, margin: 0 };
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
