@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pre-Call Brief Agent · Playable Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #10151D; }
+  @media (max-width: 860px) {
+    .twocol { grid-template-columns: 1fr !important; }
+  }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #2A3648; border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useMemo, useRef, useEffect } = React;
+
+/* ============================================================
+   Pre-Call Brief Agent — playable demo
+   Left: what the account exec sees at each step.
+   Right: connector calls + records landing in real time,
+   plus a system trace log.
+   Fork at step 2: known CRM account vs cold domain,
+   converging at Claude synthesis.
+   Fictional vendor: Wavecast (digital signage platform).
+   ============================================================ */
+
+const C = {
+  ink: "#10151D",
+  panel: "#171E29",
+  panel2: "#1E2836",
+  line: "rgba(255,255,255,0.07)",
+  signal: "#FF8A3D",
+  cyan: "#4CC3E8",
+  green: "#4ADE9C",
+  violet: "#A78BFA",
+  amber: "#F6C24B",
+  red: "#FF6B6B",
+  text: "#EEF3F8",
+  muted: "#93A3B8",
+  dim: "#5C6B80",
+};
+
+const SYS = {
+  Gateway: C.dim,
+  CRM: "#FF9D6B",
+  Enrichment: C.violet,
+  News: C.amber,
+  Analytics: C.cyan,
+  Claude: C.signal,
+  Slack: C.green,
+  Audit: "#8B95A5",
+};
+
+/* ---------------- schema / assumption tooltips ---------------- */
+
+const SCHEMA = {
+  gateway: {
+    title: "MCP gateway · scoped tokens",
+    body:
+      "Every connector call goes through one gateway with a per-tool, least-privilege token: CRM read on 4 objects, analytics read-only, one CRM write scope for the note. Nothing gets a blanket API key, and every call is audit-logged with actor, scope and object ids.",
+  },
+  account: {
+    title: "Account (CRM)",
+    body:
+      "id, name, domain, industry, employees, region, plan, licensed_units, owner_id, created_at. Source of truth stays in the CRM — the agent reads a projection, never a sync'd copy.",
+  },
+  contact: {
+    title: "Contact (CRM)",
+    body:
+      "id, account_id, name, role, seniority, channel_pref, last_touched_at, disposition (champion / neutral / blocker). Disposition is a sales-entered field, so the brief flags it as opinion, not fact.",
+  },
+  opportunity: {
+    title: "Opportunity (CRM)",
+    body:
+      "id, account_id, name, stage, value_arr, close_date, last_activity_at. Staleness (last activity > 10 days) is computed by the agent, not stored — it's presentation logic, not data.",
+  },
+  usage: {
+    title: "UsageSnapshot (analytics)",
+    body:
+      "account_id, period, active_units, licensed_units, top_features[], trials[]. Served from the warehouse via a read-only mart owned by Data Engineering — the agent never queries production. This is why the role partners with the Director of Data Engineering.",
+  },
+  signal: {
+    title: "Signal (news / web)",
+    body:
+      "source_url, kind (funding | expansion | hiring | press), summary, observed_at, confidence. Web-derived facts carry their source in the brief so the rep can verify in one click — the agent asserts nothing it can't cite.",
+  },
+  enrichment: {
+    title: "Firmographics (enrichment API)",
+    body:
+      "domain → legal name, headcount band, industry code, HQ, tech stack hints. Third-party data, so it's written to a shell Account flagged unverified until a human touches it.",
+  },
+  brief: {
+    title: "Brief (generated)",
+    body:
+      "account_id, generated_at, model, token_cost, sections[], sources[]. Stored as a record, not a chat message — so usage can be tracked, cost attributed, and adoption measured per team. Adoption that sticks is a metric, not a hope.",
+  },
+  audit: {
+    title: "AuditLog",
+    body:
+      "actor (agent-on-behalf-of rep), tool, scope, object_ids, ts. Written for every read and write. When the AI Governance Council asks what the agent can see and what it did — this table is the answer.",
+  },
+  cost: {
+    title: "Cost envelope",
+    body:
+      "One brief ≈ 18k input + 1.2k output tokens ≈ £0.03. The per-brief cost is logged on the Brief record so the build backlog can be held to a real cost envelope — killing ideas that don't pay back needs numbers.",
+  },
+  shell: {
+    title: "Shell account",
+    body:
+      "Cold-path accounts are created as shell records (source: agent, status: unverified) so pipeline reports can exclude them until a rep confirms. The agent creates leads, it doesn't inflate pipeline.",
+  },
+};
+
+/* ---------------- static demo data ---------------- */
+
+const REP = { name: "Dana Okafor", role: "Account Executive, Wavecast" };
+
+const KNOWN = {
+  account: {
+    id: "acc_1042",
+    name: "Harborline Foods",
+    domain: "harborline.co.uk",
+    industry: "Food distribution",
+    employees: 340,
+    region: "UK South East",
+    plan: "Growth",
+    licensed_units: 46,
+  },
+  contacts: [
+    {
+      id: "con_311",
+      name: "Priya Shah",
+      role: "Operations Director",
+      disposition: "champion",
+      channel: "phone",
+    },
+    {
+      id: "con_318",
+      name: "Mark Ellison",
+      role: "IT Manager",
+      disposition: "blocker",
+      channel: "email",
+    },
+  ],
+  opp: {
+    id: "opp_2211",
+    name: "Depot expansion — 30 screens",
+    stage: "Proposal",
+    value: "£14,400 ARR",
+    close: "28 Aug",
+    lastActivity: "12 days ago",
+  },
+  usage: {
+    active: 44,
+    licensed: 46,
+    topFeatures: ["Playlists", "Scheduling"],
+    trials: ["Menu boards — 2 sites"],
+  },
+  signals: [
+    {
+      id: "sig_71",
+      kind: "expansion",
+      summary: "Opened new Colchester depot (Essex County Standard, 3 wks ago)",
+    },
+    {
+      id: "sig_72",
+      kind: "hiring",
+      summary: "Job ads: Depot Operations Supervisor ×3, Colchester",
+    },
+  ],
+};
+
+const COLD = {
+  domain: "brightpath.io",
+  enriched: {
+    id: "acc_new",
+    name: "Brightpath Learning",
+    industry: "EdTech",
+    employees: "100–150",
+    hq: "Leeds, UK",
+    stack: ["Google Workspace", "Notion"],
+  },
+  signals: [
+    {
+      id: "sig_81",
+      kind: "funding",
+      summary: "£6m Series A led by Northzone (TechCrunch, June)",
+    },
+    {
+      id: "sig_82",
+      kind: "hiring",
+      summary: "Hiring an Office Experience Manager — new Leeds HQ fit-out",
+    },
+  ],
+  lookalike: {
+    name: "EduServe",
+    note: "EdTech, similar headcount — deployed 24 screens across 2 offices. Case study available.",
+  },
+};
+
+const BRIEF_KNOWN = [
+  {
+    h: "Snapshot",
+    src: ["CRM"],
+    body:
+      "Harborline Foods · food distribution · 340 staff · Growth plan, 46 screens. Open opp: depot expansion (30 screens, £14.4k ARR, Proposal, closes 28 Aug) — stalled, no activity in 12 days.",
+  },
+  {
+    h: "Why now",
+    src: ["Analytics", "News"],
+    body:
+      "Running at 44/46 active screens — 96% of licence, effectively at ceiling. New Colchester depot opened 3 weeks ago and they're hiring three ops supervisors for it. The expansion opp maps exactly onto a real site that currently has zero screens.",
+  },
+  {
+    h: "Relationship",
+    src: ["CRM"],
+    body:
+      "Priya Shah (Ops Director) is your champion — prefers a call. Mark Ellison (IT) has been the friction point: he raised depot Wi-Fi reliability in ticket #4821 back in March. Assume that objection returns.",
+  },
+  {
+    h: "Talking points",
+    src: ["Analytics"],
+    body:
+      "The menu-boards trial at two sites is quietly succeeding — heaviest feature uptake this quarter. Lead with that as proof the team adopts what you ship, then bridge to Colchester.",
+  },
+  {
+    h: "Landmines",
+    src: ["CRM"],
+    body:
+      "Don't reopen pricing — the proposal already reflects the multi-site discount. And route anything technical through Mark by email, not on this call; going around him is how the last renewal nearly slipped.",
+  },
+  {
+    h: "Suggested next step",
+    src: ["Claude"],
+    body:
+      "Propose a site survey at the Colchester depot this month. Small ask, unblocks Mark's Wi-Fi concern with evidence, and restarts a stalled opp with a date attached.",
+  },
+];
+
+const BRIEF_COLD = [
+  {
+    h: "Snapshot",
+    src: ["Enrichment"],
+    body:
+      "Brightpath Learning · EdTech · ~120 staff · HQ Leeds. Not in CRM — shell account created, flagged unverified.",
+  },
+  {
+    h: "Why now",
+    src: ["News"],
+    body:
+      "Raised a £6m Series A in June and they're hiring an Office Experience Manager for a new Leeds HQ fit-out. Funded company + new office is the classic signage buying moment — walls exist before content strategy does.",
+  },
+  {
+    h: "Angle",
+    src: ["Claude", "CRM"],
+    body:
+      "Closest customer lookalike is EduServe: EdTech, similar size, 24 screens across two offices. Open with that story — 'companies like yours' beats a feature list on a cold call.",
+  },
+  {
+    h: "Talking points",
+    src: ["Enrichment"],
+    body:
+      "They run Google Workspace and Notion — mention native Google Slides and dashboard casting; skip the Microsoft integrations entirely.",
+  },
+  {
+    h: "Suggested next step",
+    src: ["Claude"],
+    body:
+      "Ask for 20 minutes with whoever owns the fit-out. Offer the EduServe case study as the follow-up asset either way.",
+  },
+];
+
+/* ---------------- tiny UI atoms ---------------- */
+
+function InfoTip({ k, align = "left" }) {
+  const [open, setOpen] = useState(false);
+  const t = SCHEMA[k];
+  if (!t) return null;
+  return (
+    <span
+      style={{ position: "relative", display: "inline-block", marginLeft: 6 }}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <span
+        tabIndex={0}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
+        style={{
+          cursor: "help",
+          fontSize: 11,
+          color: C.cyan,
+          border: `1px solid ${C.cyan}55`,
+          borderRadius: "50%",
+          width: 15,
+          height: 15,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          lineHeight: 1,
+          verticalAlign: "middle",
+        }}
+      >
+        i
+      </span>
+      {open && (
+        <span
+          style={{
+            position: "absolute",
+            zIndex: 40,
+            top: 20,
+            [align]: 0,
+            width: 280,
+            background: "#0B0F15",
+            border: `1px solid ${C.line}`,
+            borderRadius: 8,
+            padding: "10px 12px",
+            boxShadow: "0 12px 30px rgba(0,0,0,0.55)",
+            display: "block",
+          }}
+        >
+          <span
+            style={{
+              display: "block",
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11,
+              color: C.cyan,
+              marginBottom: 4,
+            }}
+          >
+            {t.title}
+          </span>
+          <span style={{ display: "block", fontSize: 12, color: C.muted, lineHeight: 1.5 }}>
+            {t.body}
+          </span>
+        </span>
+      )}
+    </span>
+  );
+}
+
+function Chip({ label }) {
+  const col = SYS[label] || C.dim;
+  return (
+    <span
+      style={{
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontSize: 10,
+        color: col,
+        border: `1px solid ${col}44`,
+        borderRadius: 4,
+        padding: "1px 6px",
+        marginRight: 5,
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+function Btn({ children, onClick, primary, disabled }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        cursor: disabled ? "default" : "pointer",
+        opacity: disabled ? 0.4 : 1,
+        background: primary ? C.signal : "transparent",
+        color: primary ? "#1A0E02" : C.text,
+        border: primary ? "none" : `1px solid ${C.line}`,
+        borderRadius: 8,
+        padding: "10px 18px",
+        fontSize: 14,
+        fontWeight: 600,
+        fontFamily: "'IBM Plex Sans', sans-serif",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function RecordCard({ title, k, fields, fresh }) {
+  return (
+    <div
+      style={{
+        background: C.panel2,
+        border: `1px solid ${fresh ? C.green + "66" : C.line}`,
+        borderRadius: 8,
+        padding: "9px 11px",
+        marginBottom: 8,
+        transition: "border-color 0.6s",
+      }}
+    >
+      <div
+        style={{
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: 11,
+          color: fresh ? C.green : C.muted,
+          marginBottom: 5,
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
+        {title}
+        {k && <InfoTip k={k} align="right" />}
+      </div>
+      {fields.map(([f, v], i) => (
+        <div key={i} style={{ display: "flex", fontSize: 11.5, lineHeight: 1.7 }}>
+          <span style={{ color: C.dim, width: 108, flexShrink: 0 }}>{f}</span>
+          <span style={{ color: C.text }}>{v}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ---------------- trace log ---------------- */
+
+function Trace({ lines }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (ref.current) ref.current.scrollTop = ref.current.scrollHeight;
+  }, [lines]);
+  return (
+    <div
+      ref={ref}
+      style={{
+        background: "#0B0F15",
+        border: `1px solid ${C.line}`,
+        borderRadius: 8,
+        padding: "10px 12px",
+        height: 168,
+        overflowY: "auto",
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontSize: 11,
+        lineHeight: 1.85,
+      }}
+    >
+      {lines.length === 0 && (
+        <span style={{ color: C.dim }}>— trace idle · waiting for the agent —</span>
+      )}
+      {lines.map((l, i) => (
+        <div key={i}>
+          <span style={{ color: SYS[l.sys] || C.dim }}>[{l.sys}]</span>{" "}
+          <span style={{ color: C.muted }}>{l.msg}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ---------------- step content (left screens) ---------------- */
+
+const h1 = {
+  fontFamily: "'Space Grotesk', sans-serif",
+  fontSize: 26,
+  fontWeight: 600,
+  color: C.text,
+  margin: "0 0 6px",
+  letterSpacing: "-0.01em",
+};
+const h2 = {
+  fontFamily: "'Space Grotesk', sans-serif",
+  fontSize: 19,
+  fontWeight: 600,
+  color: C.text,
+  margin: "0 0 10px",
+};
+const p = { fontSize: 13.5, color: C.muted, lineHeight: 1.65, margin: "0 0 14px" };
+
+function Screen({ children }) {
+  return (
+    <div
+      style={{
+        background: C.panel,
+        border: `1px solid ${C.line}`,
+        borderRadius: 12,
+        padding: "22px 24px",
+        minHeight: 430,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ============================================================ */
+
+function App() {
+  const [step, setStep] = useState(0);
+  const [path, setPath] = useState(null); // "known" | "cold"
+  const [trace, setTrace] = useState([]);
+  const [records, setRecords] = useState({}); // keyed presence
+  const [fresh, setFresh] = useState(null);
+  const [briefIdx, setBriefIdx] = useState(0);
+  const timers = useRef([]);
+
+  const log = (sys, msg) => setTrace((t) => [...t, { sys, msg }]);
+  const land = (key) => {
+    setRecords((r) => ({ ...r, [key]: true }));
+    setFresh(key);
+  };
+  const later = (ms, fn) => {
+    const id = setTimeout(fn, ms);
+    timers.current.push(id);
+  };
+  const clearTimers = () => {
+    timers.current.forEach(clearTimeout);
+    timers.current = [];
+  };
+
+  useEffect(() => () => clearTimers(), []);
+
+  const reset = () => {
+    clearTimers();
+    setStep(0);
+    setPath(null);
+    setTrace([]);
+    setRecords({});
+    setFresh(null);
+    setBriefIdx(0);
+  };
+
+  /* ---- step side-effects ---- */
+
+  const startAgent = (chosen) => {
+    setPath(chosen);
+    setStep(2);
+    log("Gateway", "session opened · actor=agent(dana.okafor) · scopes: crm.read, analytics.read, web.search, crm.note.write");
+    log("Audit", "log stream attached");
+  };
+
+  const runFetch = () => {
+    setStep(3);
+    if (path === "known") {
+      log("CRM", "GET /accounts?domain=harborline.co.uk → acc_1042");
+      later(350, () => {
+        land("account");
+        log("CRM", "GET /accounts/acc_1042/contacts → 2 records");
+      });
+      later(750, () => {
+        land("contacts");
+        log("CRM", "GET /opportunities?account=acc_1042&status=open → opp_2211");
+      });
+      later(1150, () => {
+        land("opp");
+        log("Audit", "3 reads logged · objects: acc_1042, con_311, con_318, opp_2211");
+      });
+    } else {
+      log("Enrichment", "POST /enrich {domain: brightpath.io}");
+      later(400, () => {
+        land("enriched");
+        log("Enrichment", "→ Brightpath Learning · EdTech · 100–150 staff · Leeds");
+      });
+      later(850, () => {
+        log("CRM", "POST /accounts (shell, status=unverified) → acc_new");
+        land("shell");
+      });
+      later(1250, () => {
+        log("Audit", "1 external read + 1 shell write logged");
+      });
+    }
+  };
+
+  const runSignals = () => {
+    setStep(4);
+    log("News", path === "known" ? "search: \"Harborline Foods\" past 90d" : "search: \"Brightpath Learning\" past 180d");
+    later(400, () => {
+      land("signals");
+      log("News", path === "known" ? "→ 2 signals: depot opening, hiring ×3" : "→ 2 signals: £6m Series A, HQ fit-out hire");
+    });
+    if (path === "known") {
+      later(850, () => {
+        log("Analytics", "GET /usage/acc_1042/latest (read-only mart)");
+      });
+      later(1250, () => {
+        land("usage");
+        log("Analytics", "→ 44/46 screens active · menu-boards trial live at 2 sites");
+      });
+    } else {
+      later(850, () => {
+        log("CRM", "GET /accounts?industry=EdTech&size≈120 → lookalike: EduServe");
+      });
+      later(1250, () => {
+        land("lookalike");
+        log("CRM", "→ EduServe case study attached as asset");
+      });
+    }
+  };
+
+  const runSynthesis = () => {
+    setStep(5);
+    setBriefIdx(0);
+    const sections = path === "known" ? BRIEF_KNOWN : BRIEF_COLD;
+    log("Claude", `synthesis start · ${path === "known" ? "5 sources" : "4 sources"} · citations required`);
+    sections.forEach((s, i) => {
+      later(500 + i * 550, () => {
+        setBriefIdx(i + 1);
+        log("Claude", `section ${i + 1}/${sections.length}: ${s.h}`);
+      });
+    });
+    later(500 + sections.length * 550 + 200, () => {
+      land("brief");
+      log("Claude", "brief complete · 1.2k tokens out · cost £0.03");
+    });
+  };
+
+  const runDeliver = () => {
+    setStep(6);
+    log("CRM", "POST /accounts/…/notes {brief_id} — logged against the record");
+    later(450, () => {
+      log("Slack", "DM → @dana: your 14:30 brief is ready (58 sec before you asked)");
+    });
+    later(900, () => {
+      land("audit");
+      log("Audit", "session closed · 9 events · full chain: who, what scope, which objects");
+    });
+  };
+
+  /* ---- data panel contents ---- */
+
+  const panelCards = useMemo(() => {
+    const cards = [];
+    if (path === "known") {
+      if (records.account)
+        cards.push(
+          <RecordCard
+            key="a"
+            title="Account · acc_1042"
+            k="account"
+            fresh={fresh === "account"}
+            fields={[
+              ["name", KNOWN.account.name],
+              ["industry", KNOWN.account.industry],
+              ["plan / units", `${KNOWN.account.plan} · ${KNOWN.account.licensed_units} screens`],
+            ]}
+          />
+        );
+      if (records.contacts)
+        cards.push(
+          <RecordCard
+            key="c"
+            title="Contacts · 2"
+            k="contact"
+            fresh={fresh === "contacts"}
+            fields={KNOWN.contacts.map((c) => [
+              c.name.split(" ")[0],
+              `${c.role} · ${c.disposition}`,
+            ])}
+          />
+        );
+      if (records.opp)
+        cards.push(
+          <RecordCard
+            key="o"
+            title="Opportunity · opp_2211"
+            k="opportunity"
+            fresh={fresh === "opp"}
+            fields={[
+              ["stage", `${KNOWN.opp.stage} · ${KNOWN.opp.value}`],
+              ["close", KNOWN.opp.close],
+              ["last activity", KNOWN.opp.lastActivity + " ⚠"],
+            ]}
+          />
+        );
+      if (records.usage)
+        cards.push(
+          <RecordCard
+            key="u"
+            title="UsageSnapshot"
+            k="usage"
+            fresh={fresh === "usage"}
+            fields={[
+              ["active / licensed", `${KNOWN.usage.active} / ${KNOWN.usage.licensed} · 96%`],
+              ["top features", KNOWN.usage.topFeatures.join(", ")],
+              ["trials", KNOWN.usage.trials[0]],
+            ]}
+          />
+        );
+    } else if (path === "cold") {
+      if (records.enriched)
+        cards.push(
+          <RecordCard
+            key="e"
+            title="Firmographics"
+            k="enrichment"
+            fresh={fresh === "enriched"}
+            fields={[
+              ["name", COLD.enriched.name],
+              ["industry / size", `${COLD.enriched.industry} · ${COLD.enriched.employees}`],
+              ["stack hints", COLD.enriched.stack.join(", ")],
+            ]}
+          />
+        );
+      if (records.shell)
+        cards.push(
+          <RecordCard
+            key="s"
+            title="Account (shell) · acc_new"
+            k="shell"
+            fresh={fresh === "shell"}
+            fields={[
+              ["status", "unverified"],
+              ["source", "agent"],
+            ]}
+          />
+        );
+      if (records.lookalike)
+        cards.push(
+          <RecordCard
+            key="l"
+            title="Lookalike customer"
+            fresh={fresh === "lookalike"}
+            fields={[
+              ["name", COLD.lookalike.name],
+              ["note", COLD.lookalike.note],
+            ]}
+          />
+        );
+    }
+    if (records.signals)
+      cards.push(
+        <RecordCard
+          key="sig"
+          title={`Signals · ${(path === "known" ? KNOWN : COLD).signals.length}`}
+          k="signal"
+          fresh={fresh === "signals"}
+          fields={(path === "known" ? KNOWN : COLD).signals.map((s) => [s.kind, s.summary])}
+        />
+      );
+    if (records.brief)
+      cards.push(
+        <RecordCard
+          key="b"
+          title="Brief · generated"
+          k="brief"
+          fresh={fresh === "brief"}
+          fields={[
+            ["sections", String((path === "known" ? BRIEF_KNOWN : BRIEF_COLD).length)],
+            ["cost", "£0.03"],
+            ["model", "claude-sonnet"],
+          ]}
+        />
+      );
+    if (records.audit)
+      cards.push(
+        <RecordCard
+          key="au"
+          title="AuditLog · session"
+          k="audit"
+          fresh={fresh === "audit"}
+          fields={[
+            ["events", "9"],
+            ["writes", path === "cold" ? "2 (shell + note)" : "1 (note)"],
+          ]}
+        />
+      );
+    return cards;
+  }, [records, fresh, path]);
+
+  /* ---- left screens ---- */
+
+  const briefSections = path === "known" ? BRIEF_KNOWN : BRIEF_COLD;
+
+  const screens = {
+    0: (
+      <Screen>
+        <div
+          style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            color: C.signal,
+            marginBottom: 10,
+            letterSpacing: "0.08em",
+          }}
+        >
+          WAVECAST · INTERNAL TOOLING DEMO
+        </div>
+        <h1 style={h1}>The pre-call brief agent</h1>
+        <p style={p}>
+          Every seller preps calls the same way: thirty minutes across six tabs — CRM, email,
+          the analytics dashboard, Google, LinkedIn, the ticket queue. This demo shows an agent
+          doing that assembly in about twenty seconds, through least-privilege connectors
+          <InfoTip k="gateway" />, with every read and write audit-logged.
+        </p>
+        <p style={p}>
+          You're {REP.name}, an AE at Wavecast, a digital signage platform. It's 13:32. Your
+          next call is at 14:30. Watch the left panel as the rep, and the right panel as the
+          system — records land as the agent touches them.
+        </p>
+        <Btn primary onClick={() => setStep(1)}>
+          Start the walkthrough
+        </Btn>
+      </Screen>
+    ),
+    1: (
+      <Screen>
+        <h2 style={h2}>Pick the call to prep</h2>
+        <p style={p}>
+          Two very different starting points, one agent. A known account means CRM history and
+          live usage data. A cold domain means the CRM is empty and the agent has to build from
+          the outside in.
+        </p>
+        <div style={{ display: "grid", gap: 12 }}>
+          <div
+            onClick={() => startAgent("known")}
+            style={{
+              cursor: "pointer",
+              background: C.panel2,
+              border: `1px solid ${C.line}`,
+              borderRadius: 10,
+              padding: "14px 16px",
+            }}
+          >
+            <div style={{ fontSize: 15, fontWeight: 600, color: C.text }}>
+              14:30 · Harborline Foods <span style={{ color: C.signal }}>· known account</span>
+            </div>
+            <div style={{ fontSize: 12.5, color: C.muted, marginTop: 4 }}>
+              Existing customer · open expansion opp that's gone quiet
+            </div>
+          </div>
+          <div
+            onClick={() => startAgent("cold")}
+            style={{
+              cursor: "pointer",
+              background: C.panel2,
+              border: `1px solid ${C.line}`,
+              borderRadius: 10,
+              padding: "14px 16px",
+            }}
+          >
+            <div style={{ fontSize: 15, fontWeight: 600, color: C.text }}>
+              15:15 · brightpath.io <span style={{ color: C.cyan }}>· cold domain</span>
+            </div>
+            <div style={{ fontSize: 12.5, color: C.muted, marginTop: 4 }}>
+              Pasted from a prospect list · nothing in the CRM yet
+            </div>
+          </div>
+        </div>
+      </Screen>
+    ),
+    2: (
+      <Screen>
+        <h2 style={h2}>The agent opens a scoped session</h2>
+        <p style={p}>
+          One click — "Prep this call" — and the agent authenticates through the MCP gateway
+          <InfoTip k="gateway" /> as <em>agent-on-behalf-of-Dana</em>. It gets exactly four
+          scopes, none of them blanket. The audit stream attaches before the first read happens.
+        </p>
+        <p style={p}>
+          This screen is deliberately boring. Security that demos badly is security that works —
+          the interesting part is on the right, where the session and its scopes are now on the
+          record.
+        </p>
+        <Btn primary onClick={runFetch}>
+          {path === "known" ? "Pull the CRM picture" : "Enrich the domain"}
+        </Btn>
+      </Screen>
+    ),
+    3: (
+      <Screen>
+        <h2 style={h2}>
+          {path === "known" ? "What we already know" : "Building from the outside in"}
+        </h2>
+        {path === "known" ? (
+          <p style={p}>
+            Account, contacts, open opportunity — three reads, each logged. The agent notices
+            what a busy rep might not: the expansion opp has had{" "}
+            <span style={{ color: C.amber }}>no activity for 12 days</span>, and one of the two
+            contacts is flagged as a blocker with an email-only preference.
+          </p>
+        ) : (
+          <p style={p}>
+            The enrichment API turns a bare domain into firmographics, and the agent writes a{" "}
+            <span style={{ color: C.cyan }}>shell account</span>
+            <InfoTip k="shell" /> — flagged unverified so it doesn't pollute pipeline reporting.
+            The CRM stays honest even when a robot is doing the typing.
+          </p>
+        )}
+        <p style={p}>Next: what's changed in their world recently.</p>
+        <Btn primary onClick={runSignals}>
+          Scan for signals
+        </Btn>
+      </Screen>
+    ),
+    4: (
+      <Screen>
+        <h2 style={h2}>Signals — the "why now"</h2>
+        {path === "known" ? (
+          <p style={p}>
+            The news scan finds a new Colchester depot and three ops-supervisor job ads. The
+            analytics mart
+            <InfoTip k="usage" /> says they're at 96% of licensed screens. Separately these are
+            trivia; together they're the entire reason this call should happen this month.
+          </p>
+        ) : (
+          <p style={p}>
+            A £6m Series A in June and a job ad for an Office Experience Manager — funded
+            company, new HQ, empty walls. The CRM contributes the one thing a cold call needs
+            most: a lookalike customer with a case study.
+          </p>
+        )}
+        <p style={p}>
+          Everything web-derived carries its source
+          <InfoTip k="signal" /> so the rep can verify in one click. The agent asserts nothing
+          it can't cite.
+        </p>
+        <Btn primary onClick={runSynthesis}>
+          Synthesise the brief
+        </Btn>
+      </Screen>
+    ),
+    5: (
+      <Screen>
+        <h2 style={h2}>
+          Claude writes the brief
+          <InfoTip k="cost" />
+        </h2>
+        <div style={{ maxHeight: 330, overflowY: "auto", paddingRight: 6 }}>
+          {briefSections.slice(0, briefIdx).map((s, i) => (
+            <div
+              key={i}
+              style={{
+                background: C.panel2,
+                border: `1px solid ${C.line}`,
+                borderRadius: 8,
+                padding: "10px 13px",
+                marginBottom: 9,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 5,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontSize: 13.5,
+                    fontWeight: 600,
+                    color: C.signal,
+                  }}
+                >
+                  {s.h}
+                </span>
+                <span>
+                  {s.src.map((x) => (
+                    <Chip key={x} label={x} />
+                  ))}
+                </span>
+              </div>
+              <div style={{ fontSize: 12.5, color: C.text, lineHeight: 1.6 }}>{s.body}</div>
+            </div>
+          ))}
+          {briefIdx < briefSections.length && (
+            <div
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11.5,
+                color: C.dim,
+              }}
+            >
+              ▍ writing…
+            </div>
+          )}
+        </div>
+        {briefIdx >= briefSections.length && (
+          <div style={{ marginTop: 12 }}>
+            <Btn primary onClick={runDeliver}>
+              Deliver it
+            </Btn>
+          </div>
+        )}
+      </Screen>
+    ),
+    6: (
+      <Screen>
+        <h2 style={h2}>Delivered — and on the record</h2>
+        <p style={p}>
+          The brief lands two ways: a note pinned to the CRM record
+          <InfoTip k="brief" />, and a Slack DM to Dana — 58 minutes before the call, without
+          her asking. The session closes with a complete audit chain
+          <InfoTip k="audit" />: who acted, under what scope, touching which objects.
+        </p>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 12,
+            margin: "16px 0",
+          }}
+        >
+          <div
+            style={{
+              background: C.panel2,
+              borderRadius: 8,
+              padding: "12px 14px",
+              border: `1px solid ${C.line}`,
+            }}
+          >
+            <div style={{ fontSize: 11, color: C.dim, marginBottom: 4 }}>MANUAL PREP</div>
+            <div
+              style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontSize: 24,
+                color: C.muted,
+              }}
+            >
+              ~30 min
+            </div>
+            <div style={{ fontSize: 11.5, color: C.dim }}>6 tabs · often skipped entirely</div>
+          </div>
+          <div
+            style={{
+              background: C.panel2,
+              borderRadius: 8,
+              padding: "12px 14px",
+              border: `1px solid ${C.green}55`,
+            }}
+          >
+            <div style={{ fontSize: 11, color: C.green, marginBottom: 4 }}>AGENT</div>
+            <div
+              style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontSize: 24,
+                color: C.text,
+              }}
+            >
+              22 sec · £0.03
+            </div>
+            <div style={{ fontSize: 11.5, color: C.dim }}>cited, logged, tracked</div>
+          </div>
+        </div>
+        <Btn primary onClick={() => setStep(7)}>
+          The pattern behind it
+        </Btn>
+      </Screen>
+    ),
+    7: (
+      <Screen>
+        <h2 style={h2}>One pattern, many tools</h2>
+        <p style={p}>
+          Nothing here is specific to sales prep. The shape is:{" "}
+          <span style={{ color: C.text }}>
+            connectors → trusted data → agent → scoped writes → audit → adoption tracking
+          </span>
+          . Swap the connectors and the same skeleton becomes ticket triage, QBR packs, churn
+          digests, or campaign summaries.
+        </p>
+        <p style={p}>
+          The hard part was never the prompt. It's the plumbing: least-privilege scopes, a data
+          mart the business trusts, writes that keep the CRM honest, and a cost line on every
+          run so the backlog answers to numbers.
+        </p>
+        <div style={{ display: "flex", gap: 10 }}>
+          <Btn onClick={reset}>Replay ({path === "known" ? "try the cold path" : "try the known account"})</Btn>
+        </div>
+      </Screen>
+    ),
+  };
+
+  /* ---- layout ---- */
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: C.ink,
+        color: C.text,
+        fontFamily: "'IBM Plex Sans', sans-serif",
+        padding: "26px 18px 40px",
+      }}
+    >
+      <div style={{ maxWidth: 1120, margin: "0 auto" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            justifyContent: "space-between",
+            marginBottom: 18,
+            flexWrap: "wrap",
+            gap: 8,
+          }}
+        >
+          <div>
+            <span
+              style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontSize: 17,
+                fontWeight: 600,
+              }}
+            >
+              Pre-Call Brief Agent
+            </span>
+            <span
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11,
+                color: C.dim,
+                marginLeft: 10,
+              }}
+            >
+              playable walkthrough · fictional data
+            </span>
+          </div>
+          <span
+            style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11,
+              color: C.dim,
+            }}
+          >
+            step {Math.min(step, 7)} / 7{path ? ` · ${path === "known" ? "known account" : "cold domain"}` : ""}
+          </span>
+        </div>
+
+        <div
+          className="twocol"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1.25fr) minmax(0, 1fr)",
+            gap: 16,
+          }}
+        >
+          {/* left — the rep's screen */}
+          <div>{screens[step]}</div>
+
+          {/* right — data + trace */}
+          <div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 8,
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 11,
+                  color: C.muted,
+                  letterSpacing: "0.06em",
+                }}
+              >
+                RECORDS THE AGENT TOUCHES
+              </span>
+              <span
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 10.5,
+                  color: C.dim,
+                }}
+              >
+                hover ⓘ for schema
+              </span>
+            </div>
+            <div
+              style={{
+                background: C.panel,
+                border: `1px solid ${C.line}`,
+                borderRadius: 12,
+                padding: "12px 12px 6px",
+                minHeight: 200,
+                marginBottom: 14,
+              }}
+            >
+              {panelCards.length === 0 ? (
+                <div style={{ fontSize: 12, color: C.dim, padding: "6px 2px 12px" }}>
+                  Nothing yet. The agent hasn't been asked to do anything — and until it is, it
+                  can't see anything either.
+                </div>
+              ) : (
+                panelCards
+              )}
+            </div>
+            <div
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11,
+                color: C.muted,
+                letterSpacing: "0.06em",
+                marginBottom: 8,
+              }}
+            >
+              SYSTEM TRACE
+            </div>
+            <Trace lines={trace} />
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: 18,
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 10.5,
+            color: C.dim,
+          }}
+        >
+          fliz.co.uk · demo of the connectors → data → agent → audit pattern · all companies and
+          people fictional
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
