@@ -101,6 +101,16 @@ export const experiments: Experiment[] = [
     externalUrl: "https://expo.fliz.co.uk",
   },
   {
+    slug: "franchisee-helpdesk",
+    title: "Franchisee Helpdesk",
+    description:
+      "A multi-role helpdesk POC for franchise networks — ticket management, role-based dashboards, email notifications, and EC2 deployment with OpenTofu.",
+    status: "live",
+    tags: ["Next.js", "Express", "SQLite", "AWS EC2", "OpenTofu", "Resend", "Zod"],
+    date: "2026-08-22",
+    image: "/experiments/helpdesk-dashboard.png",
+  },
+  {
     slug: "resend-integration",
     title: "Resend Email Marketing - Irritable",
     description:

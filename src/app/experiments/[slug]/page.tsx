@@ -39,6 +39,7 @@ export default async function ExperimentPage({
   const isDataFusionDemo =
     experiment.slug === "streamlit-datafusion-explorer";
   const isResendDemo = experiment.slug === "resend-integration";
+  const isHelpdeskDemo = experiment.slug === "franchisee-helpdesk";
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-20">
@@ -421,6 +422,171 @@ export default async function ExperimentPage({
                 Streamlit also works well here because the value is in the data
                 workflow, not bespoke frontend engineering. That keeps the spike
                 focused on ingestion, query execution, and result export.
+              </p>
+            </div>
+          </div>
+        </>
+      ) : isHelpdeskDemo ? (
+        <>
+          <div className="space-y-6">
+            <div className="rounded-[1.75rem] border border-border-subtle bg-bg-surface p-4">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-2 pt-2">
+                <div>
+                  <p className="portfolio-kicker">Franchisee view</p>
+                  <h2 className="mt-2 text-2xl font-medium tracking-tight">
+                    Dashboard with ticket list and status counts
+                  </h2>
+                </div>
+                <span className="rounded-full border border-border-subtle px-3 py-1 font-mono text-xs text-text-muted">
+                  Deployed on EC2
+                </span>
+              </div>
+              <div className="overflow-hidden rounded-[1.25rem] border border-border-subtle">
+                <Image
+                  src="/experiments/helpdesk-dashboard.png"
+                  alt="Franchisee dashboard showing open and in-progress ticket counts with a ticket list."
+                  width={1440}
+                  height={900}
+                  className="h-auto w-full"
+                  priority
+                />
+              </div>
+            </div>
+
+            <div className="rounded-[1.75rem] border border-border-subtle bg-bg-surface p-4">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-2 pt-2">
+                <div>
+                  <p className="portfolio-kicker">Admin view</p>
+                  <h2 className="mt-2 text-2xl font-medium tracking-tight">
+                    All tickets with status and assignee filters
+                  </h2>
+                </div>
+              </div>
+              <div className="overflow-hidden rounded-[1.25rem] border border-border-subtle">
+                <Image
+                  src="/experiments/helpdesk-admin.png"
+                  alt="Admin ticket view showing all franchisee tickets with status filters and assignee columns."
+                  width={1440}
+                  height={900}
+                  className="h-auto w-full"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+              <div className="rounded-[1.5rem] border border-border-subtle bg-bg-surface p-8">
+                <p className="portfolio-kicker">Why this exists</p>
+                <h2 className="portfolio-section-title">
+                  Replacing email-based franchise support with a central ticketing system
+                </h2>
+                <div className="space-y-4 text-base leading-8 text-text-muted">
+                  <p>
+                    In a growing franchise network, support requests sent by email
+                    get lost in threads, lack visibility, and scale poorly. This
+                    POC centralises communication into a shared helpdesk where
+                    franchisees submit and track tickets, and support staff assign,
+                    update, and close them.
+                  </p>
+                  <p>
+                    The app runs a separate Express API behind the Next.js frontend,
+                    with SQLite on disk — deliberately simple infrastructure for a
+                    small network that can grow later.
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-[1.5rem] border border-border-subtle bg-bg-surface p-8">
+                <p className="portfolio-kicker">What it demonstrates</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {[
+                    "Role-based access",
+                    "Ticket lifecycle",
+                    "Email notifications",
+                    "Session auth",
+                    "Status filtering",
+                    "Ticket assignment",
+                    "EC2 + nginx deployment",
+                    "OpenTofu IaC",
+                  ].map((item) => (
+                    <span key={item} className="portfolio-tag">
+                      {item}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-6 space-y-3 text-sm leading-7 text-text-muted">
+                  <p>1. Franchisees log in, submit tickets, and track their status.</p>
+                  <p>2. Support staff see all tickets across franchisees with filters.</p>
+                  <p>3. Tickets move through Open, In Progress, and Closed states.</p>
+                  <p>4. Email notifications fire on ticket creation and status changes.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="orientation-demo-surface">
+              <div className="orientation-demo-grid">
+                <div className="orientation-demo-card">
+                  <p className="portfolio-kicker">Architecture</p>
+                  <div className="space-y-4 font-mono text-sm text-text-muted">
+                    {[
+                      "Internet → nginx (:80/443) → Next.js (:3000)",
+                      "Next.js → /api/proxy/* → Express API (:3001)",
+                      "Express → better-sqlite3 → helpdesk.db",
+                      "Express → Resend API → email notifications",
+                    ].map((line) => (
+                      <div
+                        key={line}
+                        className="rounded-2xl border border-border-subtle bg-bg px-4 py-3"
+                      >
+                        {line}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="orientation-demo-card">
+                  <p className="portfolio-kicker">Infrastructure</p>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {[
+                      ["Compute", "EC2 t3.small with pm2"],
+                      ["Database", "SQLite on EBS volume"],
+                      ["Proxy", "nginx with certbot TLS"],
+                      ["IaC", "OpenTofu (Terraform-compatible)"],
+                      ["Secrets", "AWS SSM Parameter Store"],
+                      ["Cost", "~$18/month running"],
+                    ].map(([label, value]) => (
+                      <div key={label} className="orientation-mini-card">
+                        <span className="orientation-stat-label">{label}</span>
+                        <strong>{value}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 border-t border-border-subtle pt-12">
+            <h2 className="mb-6 font-mono text-xs tracking-widest text-text-faint uppercase">
+              What I learned
+            </h2>
+            <div className="space-y-5 text-text-muted">
+              <p>
+                Splitting the API into a standalone Express server behind the
+                Next.js proxy made the backend independently testable and easier
+                to reason about than mixing Server Actions with a shared SQLite
+                connection.
+              </p>
+              <p>
+                OpenTofu with a user-data bootstrap script made the EC2
+                deployment reproducible. SSM Parameter Store for secrets kept
+                credentials out of git and the Terraform state file, which is
+                worth the extra setup even for a POC.
+              </p>
+              <p>
+                The multi-role model — franchisees see only their own tickets,
+                staff see everything — surfaced early design decisions around
+                session management and middleware that would have been easy to
+                defer and harder to retrofit.
               </p>
             </div>
           </div>
