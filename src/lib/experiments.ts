@@ -64,6 +64,16 @@ export const experiments: Experiment[] = [
     externalUrl: "/experiments/warrior-programme/vimeo-links.html",
   },
   {
+    slug: "dataflow-engine",
+    title: "Dataflow Engine",
+    description:
+      "A lightweight data integration engine with YAML-defined pipelines, visual flow monitoring, and reconciliation checks — built as an n8n-adjacent demo.",
+    status: "live",
+    tags: ["TypeScript", "Node.js", "SQLite", "YAML", "Data Pipelines"],
+    date: "2026-08-31",
+    image: "/experiments/dataflow-ui.png",
+  },
+  {
     slug: "react-email",
     title: "React Email Templates",
     description:

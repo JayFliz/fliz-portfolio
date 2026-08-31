@@ -40,6 +40,7 @@ export default async function ExperimentPage({
     experiment.slug === "streamlit-datafusion-explorer";
   const isResendDemo = experiment.slug === "resend-integration";
   const isHelpdeskDemo = experiment.slug === "franchisee-helpdesk";
+  const isDataflowDemo = experiment.slug === "dataflow-engine";
 
   return (
     <div className="mx-auto max-w-[72rem] px-6 md:px-10">
@@ -581,6 +582,145 @@ export default async function ExperimentPage({
                 staff see everything — surfaced early design decisions around
                 session management and middleware that would have been easy to
                 defer and harder to retrofit.
+              </p>
+            </div>
+          </div>
+        </>
+      ) : isDataflowDemo ? (
+        <>
+          <div className="space-y-6">
+            <div className="rounded-[1.75rem] border border-border-subtle bg-bg-surface p-4">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-2 pt-2">
+                <div>
+                  <p className="portfolio-kicker">Pipeline dashboard</p>
+                  <h2 className="mt-2 text-2xl font-medium tracking-tight">
+                    Visual flow canvas with live run history
+                  </h2>
+                </div>
+                <span className="rounded-full border border-border-subtle px-3 py-1 font-mono text-xs text-text-muted">
+                  Local-only
+                </span>
+              </div>
+              <div className="overflow-hidden rounded-[1.25rem] border border-border-subtle">
+                <Image
+                  src="/experiments/dataflow-ui.png"
+                  alt="Dataflow engine web UI showing a YAML-defined pipeline rendered as a visual node flow with run history."
+                  width={1440}
+                  height={900}
+                  className="h-auto w-full"
+                  priority
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+              <div className="rounded-[1.5rem] border border-border-subtle bg-bg-surface p-8">
+                <p className="portfolio-kicker">Why this exists</p>
+                <h2 className="portfolio-section-title">
+                  Understanding pipeline orchestration from first principles
+                </h2>
+                <div className="space-y-4 text-base leading-8 text-text-muted">
+                  <p>
+                    Rather than starting with a framework, this spike builds a
+                    data integration engine from scratch — sources, transforms,
+                    sinks, scheduling, and reconciliation — to understand the
+                    core abstractions that tools like n8n are built on.
+                  </p>
+                  <p>
+                    The web UI renders YAML pipeline definitions as visual node
+                    flows, with one-click execution and a persistent run history
+                    backed by SQLite.
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-[1.5rem] border border-border-subtle bg-bg-surface p-8">
+                <p className="portfolio-kicker">What it demonstrates</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {[
+                    "YAML pipeline definitions",
+                    "Source/Transform/Sink model",
+                    "Visual flow rendering",
+                    "Reconciliation checks",
+                    "Run history (SQLite)",
+                    "REST, RSS, CSV, SQLite connectors",
+                    "Pluggable transforms",
+                    "CLI + Web UI",
+                  ].map((item) => (
+                    <span key={item} className="portfolio-tag">
+                      {item}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-6 space-y-3 text-sm leading-7 text-text-muted">
+                  <p>1. Define a pipeline in YAML — source, transforms, sinks, schedule.</p>
+                  <p>2. The engine loads and validates the definition at startup.</p>
+                  <p>3. The web UI renders each pipeline as a connected node flow.</p>
+                  <p>4. Run pipelines from the UI and inspect results in the history table.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="orientation-demo-surface">
+              <div className="orientation-demo-grid">
+                <div className="orientation-demo-card">
+                  <p className="portfolio-kicker">Pipeline architecture</p>
+                  <div className="space-y-4 font-mono text-sm text-text-muted">
+                    {[
+                      "YAML → Loader → Engine.register(pipeline)",
+                      "Source.fetch() → TransformStep[] → Sink.write()",
+                      "Reconciliation.check(fetched, written)",
+                      "RunStore → SQLite → run history + stats",
+                    ].map((line) => (
+                      <div
+                        key={line}
+                        className="rounded-2xl border border-border-subtle bg-bg px-4 py-3"
+                      >
+                        {line}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="orientation-demo-card">
+                  <p className="portfolio-kicker">Connectors and transforms</p>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {[
+                      ["Sources", "REST API, RSS, CSV, SQLite"],
+                      ["Sinks", "CSV file, SQLite table"],
+                      ["Transforms", "pick, addField, timestamp, mapFields, dedupe, coerce"],
+                      ["Monitoring", "count-match reconciliation, run logs"],
+                    ].map(([label, value]) => (
+                      <div key={label} className="orientation-mini-card">
+                        <span className="orientation-stat-label">{label}</span>
+                        <strong>{value}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 border-t border-border-subtle pt-12">
+            <h2 className="mb-6 font-mono text-xs tracking-widest text-text-faint uppercase">
+              What I learned
+            </h2>
+            <div className="space-y-5 text-text-muted">
+              <p>
+                Building the engine first and the UI second made it clear which
+                abstractions actually matter: the source/transform/sink pipeline
+                model, reconciliation as a first-class concept, and YAML as a
+                declarative interface all survived contact with real data. The
+                visual flow was straightforward to layer on top because the
+                domain model was already clean.
+              </p>
+              <p>
+                The reconciliation check — comparing records fetched to records
+                written — is a small feature that punches above its weight.
+                Most pipeline tools bolt this on later or leave it to the user.
+                Making it declarative in the YAML definition keeps the pipeline
+                author thinking about data quality from the start.
               </p>
             </div>
           </div>
