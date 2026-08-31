@@ -236,14 +236,24 @@ export default function JsxPlayground() {
     document.body.style.userSelect = "none";
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const hash = codeToHash(code);
-    const url = `${window.location.origin}${window.location.pathname}#${hash}`;
     window.history.replaceState(null, "", `#${hash}`);
-    navigator.clipboard.writeText(url).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
+    try {
+      const res = await fetch("/api/jsx/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hash }),
+      });
+      const { id } = await res.json();
+      const url = `${window.location.origin}/jsx/s/${id}`;
+      await navigator.clipboard.writeText(url);
+    } catch {
+      const url = `${window.location.origin}${window.location.pathname}#${hash}`;
+      await navigator.clipboard.writeText(url);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleSave = () => {
