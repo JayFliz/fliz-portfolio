@@ -11,18 +11,24 @@ export default function Home() {
       <section className="bg-accent">
         <div className="mx-auto max-w-[80rem] px-6 py-20 md:px-10 md:py-32">
           <h1 className="heading-xl mb-10 max-w-[16ch]">
-            <span className="highlight-mark">I build things,</span>
+            <span className="hero-line hero-line-1">
+              <span className="highlight-mark">I build things,</span>
+            </span>
             <br />
-            <span className="highlight-mark">then I help</span>
+            <span className="hero-line hero-line-2">
+              <span className="highlight-mark">then I help</span>
+            </span>
             <br />
-            <span className="highlight-mark">people</span>{" "}
-            <span className="highlight-mark italic">use them.</span>
+            <span className="hero-line hero-line-3">
+              <span className="highlight-mark">people</span>{" "}
+              <span className="highlight-mark italic">use them.</span>
+            </span>
           </h1>
-          <p className="mb-12 max-w-[48ch] font-display text-xl italic leading-relaxed text-text/70 md:text-2xl">
+          <p className="hero-sub mb-12 max-w-[48ch] font-display text-xl italic leading-relaxed text-text/70 md:text-2xl">
             Technical support engineer and full-stack developer with 15+ years
             across startups, government, legal, and enterprise.
           </p>
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="hero-cta flex flex-wrap items-center gap-4">
             <Link
               href="/experiments"
               className="inline-flex items-center gap-3 bg-text px-8 py-4 text-sm font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-80"
