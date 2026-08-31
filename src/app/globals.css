@@ -364,13 +364,6 @@
   }
 }
 
-@keyframes hero-wobble {
-  0% { transform: translateY(-0.15em) rotate(0deg); }
-  25% { transform: translateY(-0.15em) rotate(-1deg); }
-  75% { transform: translateY(-0.15em) rotate(1deg); }
-  100% { transform: translateY(-0.15em) rotate(0deg); }
-}
-
 .hero-line {
   display: inline-block;
   opacity: 0;
@@ -379,7 +372,6 @@
 }
 
 .hero-line:hover {
-  animation: hero-wobble 0.4s ease-in-out;
   transform: translateY(-0.15em);
 }
 
