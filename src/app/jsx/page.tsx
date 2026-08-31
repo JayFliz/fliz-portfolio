@@ -15,6 +15,7 @@ const DEFAULT_CODE = `<div style={{ padding: 24, fontFamily: 'system-ui' }}>
 </div>`;
 
 const RECENTS_KEY = "jsx-playground-recents";
+const SHORTCODES_KEY = "jsx-playground-shortcodes";
 const MAX_RECENTS = 20;
 
 interface SavedSnippet {
@@ -45,6 +46,31 @@ function deleteRecent(savedAt: number) {
   try {
     localStorage.setItem(RECENTS_KEY, JSON.stringify(recents));
   } catch {}
+}
+
+function getShortcodes(): Record<string, string> {
+  try {
+    return JSON.parse(localStorage.getItem(SHORTCODES_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveShortcode(id: string, hash: string) {
+  const codes = getShortcodes();
+  codes[id] = hash;
+  try {
+    localStorage.setItem(SHORTCODES_KEY, JSON.stringify(codes));
+  } catch {}
+}
+
+function generateShortId(): string {
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  const arr = new Uint8Array(6);
+  crypto.getRandomValues(arr);
+  return Array.from(arr)
+    .map((b) => chars[b % chars.length])
+    .join("");
 }
 
 function codeToHash(code: string): string {
@@ -239,18 +265,21 @@ export default function JsxPlayground() {
   const handleShare = async () => {
     const hash = codeToHash(code);
     window.history.replaceState(null, "", `#${hash}`);
+    const codes = getShortcodes();
+    const existing = Object.entries(codes).find(([, h]) => h === hash);
+    let id: string;
+    if (existing) {
+      id = existing[0];
+    } else {
+      id = generateShortId();
+      saveShortcode(id, hash);
+    }
+    const url = `${window.location.origin}/jsx/s/${id}`;
     try {
-      const res = await fetch("/api/jsx/share", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hash }),
-      });
-      const { id } = await res.json();
-      const url = `${window.location.origin}/jsx/s/${id}`;
       await navigator.clipboard.writeText(url);
     } catch {
-      const url = `${window.location.origin}${window.location.pathname}#${hash}`;
-      await navigator.clipboard.writeText(url);
+      const fallback = `${window.location.origin}${window.location.pathname}#${hash}`;
+      await navigator.clipboard.writeText(fallback);
     }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
