@@ -42,60 +42,54 @@ export default async function ExperimentPage({
   const isHelpdeskDemo = experiment.slug === "franchisee-helpdesk";
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-20">
-      <Link
-        href="/experiments"
-        className="mb-8 inline-flex items-center gap-2 font-mono text-sm text-text-muted transition-colors hover:text-text"
-      >
-        ← Back to experiments
-      </Link>
-
-      <div className="mb-12">
-        <div className="mb-4 flex items-center gap-3">
-          <span className="font-mono text-xs tracking-widest text-accent uppercase">
-            Experiment
-          </span>
-          <span className="font-mono text-xs text-text-faint">
-            {new Date(experiment.date).toLocaleDateString("en-GB", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </span>
-        </div>
-        <h1
-          className="mb-4 text-4xl tracking-tight md:text-5xl"
-          style={{ fontFamily: "var(--font-display)" }}
+    <div className="mx-auto max-w-[72rem] px-6 md:px-10">
+      <div className="py-24 md:py-32">
+        <Link
+          href="/experiments"
+          className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-accent transition-colors hover:text-accent-hover"
         >
-          {experiment.title}
-        </h1>
-        <p className="mb-6 max-w-lg text-lg text-text-muted">
-          {experiment.description}
-        </p>
-        {isOrientationDemo ? (
-          <div className="mb-6">
-            <a
-              href="https://gor-orcin.vercel.app/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 font-mono text-sm text-text transition-colors hover:bg-bg-elevated"
-            >
-              View live demo
-              <span aria-hidden="true">↗</span>
-            </a>
-          </div>
-        ) : null}
-        <div className="flex flex-wrap gap-2">
-          {experiment.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full border border-border-subtle px-3 py-1 font-mono text-xs text-text-faint"
-            >
-              {tag}
+          &larr; Back to experiments
+        </Link>
+
+        <div className="mb-16">
+          <div className="mb-4 flex items-center gap-4">
+            <span className="kicker">Experiment</span>
+            <span className="font-mono text-xs text-text-faint">
+              {new Date(experiment.date).toLocaleDateString("en-GB", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
             </span>
-          ))}
+          </div>
+          <h1 className="heading-lg mb-4">{experiment.title}</h1>
+          <p className="mb-6 max-w-[55ch] text-lg text-text-muted md:text-xl">
+            {experiment.description}
+          </p>
+          {isOrientationDemo ? (
+            <div className="mb-6">
+              <a
+                href="https://gor-orcin.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+              >
+                View live demo
+                <span aria-hidden="true">&nearr;</span>
+              </a>
+            </div>
+          ) : null}
+          <div className="flex flex-wrap gap-2">
+            {experiment.tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full border border-border-subtle bg-bg-surface px-3 py-1 font-mono text-xs text-text-faint"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
 
       {isOrientationDemo ? (
         <>
@@ -662,6 +656,7 @@ export default async function ExperimentPage({
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }

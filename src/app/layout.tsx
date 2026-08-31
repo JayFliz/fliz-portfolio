@@ -18,18 +18,18 @@ export const metadata: Metadata = {
 
 function Nav() {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border-subtle bg-bg">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+    <nav className="border-b border-border-subtle">
+      <div className="mx-auto flex max-w-[72rem] items-center justify-between px-6 py-5 md:px-10">
         <Link
           href="/"
-          className="font-mono text-sm tracking-wide text-text-muted transition-colors hover:text-accent"
+          className="text-lg font-semibold tracking-tight text-text transition-colors hover:text-accent"
         >
-          fliz.co.uk
+          Jay Greasley
         </Link>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-8">
           <Link
             href="/experiments"
-            className="text-sm text-text-muted transition-colors hover:text-text"
+            className="text-[0.95rem] text-text-muted transition-colors hover:text-accent"
           >
             Experiments
           </Link>
@@ -37,7 +37,7 @@ function Nav() {
             href="https://linkedin.com/in/jamesgreasley"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-text-muted transition-colors hover:text-text"
+            className="text-[0.95rem] text-text-muted transition-colors hover:text-accent"
           >
             LinkedIn
           </a>
@@ -45,7 +45,7 @@ function Nav() {
             href="https://github.com/JayFliz"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-text-muted transition-colors hover:text-text"
+            className="text-[0.95rem] text-text-muted transition-colors hover:text-accent"
           >
             GitHub
           </a>
@@ -58,13 +58,36 @@ function Nav() {
 function Footer() {
   return (
     <footer className="border-t border-border-subtle">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-8">
-        <p className="font-mono text-xs text-text-faint">
-          © {new Date().getFullYear()} Jay Greasley
+      <div className="mx-auto flex max-w-[72rem] flex-col items-center gap-4 px-6 py-12 text-center md:flex-row md:justify-between md:px-10 md:text-left">
+        <p className="text-sm text-text-faint">
+          &copy; {new Date().getFullYear()} Jay Greasley
         </p>
-        <p className="font-mono text-xs text-text-faint">
-          Built with Next.js · Hosted on Vercel
-        </p>
+        <div className="flex items-center gap-6">
+          <a
+            href="mailto:jay@fliz.co.uk"
+            className="text-sm text-text-faint transition-colors hover:text-accent"
+          >
+            jay@fliz.co.uk
+          </a>
+          <span className="text-text-faint">*</span>
+          <a
+            href="https://linkedin.com/in/jamesgreasley"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-text-faint transition-colors hover:text-accent"
+          >
+            LinkedIn
+          </a>
+          <span className="text-text-faint">*</span>
+          <a
+            href="https://github.com/JayFliz"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-text-faint transition-colors hover:text-accent"
+          >
+            GitHub
+          </a>
+        </div>
       </div>
     </footer>
   );
@@ -91,7 +114,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen">
         <Nav />
-        <main className="pt-16">{children}</main>
+        <main>{children}</main>
         <Footer />
       </body>
     </html>

@@ -6,31 +6,24 @@ export default function Home() {
   const totalCount = experiments.length;
 
   return (
-    <div className="mx-auto max-w-5xl px-6">
-      <section className="flex min-h-[70vh] flex-col justify-center py-20">
-        <p className="mb-4 font-mono text-sm tracking-widest text-text-muted uppercase">
-          Jay Greasley
-        </p>
-        <h1
-          className="mb-6 text-5xl leading-tight tracking-tight md:text-6xl"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          I build things,
-          <br />
-          then I help people
-          <br />
-          <span className="italic text-text-muted">use them.</span>
+    <div className="mx-auto max-w-[72rem] px-6 md:px-10">
+      {/* Hero */}
+      <section className="py-24 md:py-32">
+        <p className="kicker mb-6">Technical Engineer & Builder</p>
+        <h1 className="heading-xl mb-8 max-w-[18ch]">
+          I build things, then I help people{" "}
+          <span className="italic text-accent">use them.</span>
         </h1>
-        <p className="mb-10 max-w-lg text-lg leading-relaxed text-text-muted">
+        <p className="mb-10 max-w-[55ch] text-lg leading-relaxed text-text-muted md:text-xl">
           Technical support engineer and full-stack developer with 15+ years
           across startups, government, legal, and enterprise. I learn fast,
           build pragmatic solutions, and bridge the gap between engineering
           and customers.
         </p>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <Link
             href="/experiments"
-            className="inline-flex items-center gap-2 rounded-full bg-text px-6 py-3 text-sm font-medium text-bg transition-opacity hover:opacity-80"
+            className="inline-flex items-center gap-3 rounded-full bg-accent px-7 py-3.5 text-[0.95rem] font-medium text-white transition-colors hover:bg-accent-hover"
           >
             View experiments
             <span className="font-mono text-xs opacity-70">
@@ -39,39 +32,50 @@ export default function Home() {
           </Link>
           <a
             href="mailto:jay@fliz.co.uk"
-            className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm text-text-muted transition-colors hover:border-text-muted hover:text-text"
+            className="inline-flex items-center gap-2 rounded-full border-2 border-text/10 px-7 py-3.5 text-[0.95rem] text-text-muted transition-colors hover:border-accent hover:text-accent"
           >
             Get in touch
           </a>
         </div>
       </section>
 
-      <section className="border-t border-border-subtle py-20">
-        <h2 className="mb-12 font-mono text-xs tracking-widest text-text-faint uppercase">
-          What I bring
+      <div className="divider">* * *</div>
+
+      {/* What I bring */}
+      <section className="py-16 md:py-24">
+        <p className="kicker mb-4">What I bring</p>
+        <h2 className="heading-lg mb-16 max-w-[20ch]">
+          The rare overlap of <span className="text-highlight">building</span>{" "}
+          and <span className="text-highlight">supporting.</span>
         </h2>
-        <div className="grid gap-8 md:grid-cols-3">
-          <div className="group">
-            <div className="mb-3 font-mono text-2xl text-text-faint">01</div>
-            <h3 className="mb-2 text-lg font-medium">Build Products</h3>
+        <div className="grid gap-12 md:grid-cols-3 md:gap-8">
+          <div>
+            <div className="mb-4 font-mono text-4xl font-light text-accent">
+              01
+            </div>
+            <h3 className="heading-md mb-3">Build Products</h3>
             <p className="text-base leading-relaxed text-text-muted">
               NextJS, React, TypeScript, C#, Ruby on Rails. I build full-stack
               applications from scratch — currently a bespoke CRM handling real
               events and real members.
             </p>
           </div>
-          <div className="group">
-            <div className="mb-3 font-mono text-2xl text-text-faint">02</div>
-            <h3 className="mb-2 text-lg font-medium">Support & Debug</h3>
+          <div>
+            <div className="mb-4 font-mono text-4xl font-light text-accent">
+              02
+            </div>
+            <h3 className="heading-md mb-3">Support & Debug</h3>
             <p className="text-base leading-relaxed text-text-muted">
               Deep experience in technical support engineering at InfluxData,
               Demandbase, and ScreenCloud. Distributed systems, databases,
               cloud infrastructure — I trace issues through the full stack.
             </p>
           </div>
-          <div className="group">
-            <div className="mb-3 font-mono text-2xl text-text-faint">03</div>
-            <h3 className="mb-2 text-lg font-medium">Bridge the Gap</h3>
+          <div>
+            <div className="mb-4 font-mono text-4xl font-light text-accent">
+              03
+            </div>
+            <h3 className="heading-md mb-3">Bridge the Gap</h3>
             <p className="text-base leading-relaxed text-text-muted">
               The rarest skill in tech: understanding both how products are
               built and how customers use them. I turn customer pain into
@@ -81,36 +85,47 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-t border-border-subtle py-20">
-        <h2 className="mb-12 font-mono text-xs tracking-widest text-text-faint uppercase">
-          Current focus
-        </h2>
+      <div className="divider">* * *</div>
+
+      {/* Current focus */}
+      <section className="py-16 md:py-24">
+        <p className="kicker mb-4">Current focus</p>
+        <h2 className="heading-lg mb-16">What I&apos;m working on.</h2>
         <div className="grid gap-6 md:grid-cols-3">
-          <div className="rounded-lg border border-border-subtle bg-bg-surface p-6">
-            <div className="mb-2 font-mono text-xs text-live">● Active</div>
-            <h3 className="mb-2 text-lg font-medium">Ceroc CRM</h3>
+          <div className="group rounded-2xl border border-border-subtle bg-bg-surface p-8 transition-all hover:border-accent/30 hover:shadow-[0_0_0_1px_rgba(37,99,235,0.1)]">
+            <div className="mb-3 inline-flex items-center gap-2 font-mono text-xs font-medium text-accent">
+              <span className="inline-block h-2 w-2 rounded-full bg-accent" />
+              Active
+            </div>
+            <h3 className="heading-md mb-3">Ceroc CRM</h3>
             <p className="text-base leading-relaxed text-text-muted">
               Bespoke event and member management system. NextJS, C#, Azure, SQL
               Server. Claude API integration for intelligent data workflows.
             </p>
           </div>
-          <div className="rounded-lg border border-border-subtle bg-bg-surface p-6">
-            <div className="mb-2 font-mono text-xs text-wip">● Demo</div>
-            <h3 className="mb-2 text-lg font-medium">Global Orientation Ritual</h3>
+          <div className="group rounded-2xl border border-border-subtle bg-bg-surface p-8 transition-all hover:border-highlight/30 hover:shadow-[0_0_0_1px_rgba(249,115,22,0.1)]">
+            <div className="mb-3 inline-flex items-center gap-2 font-mono text-xs font-medium text-highlight">
+              <span className="inline-block h-2 w-2 rounded-full bg-highlight" />
+              Demo
+            </div>
+            <h3 className="heading-md mb-3">Global Orientation Ritual</h3>
             <p className="text-base leading-relaxed text-text-muted">
               A live experiment for capturing signals, reviewing patterns, and
               turning scattered updates into a weekly orientation ritual.
             </p>
             <Link
               href="/experiments/global-orientation-ritual"
-              className="mt-4 inline-flex text-sm text-text-muted underline decoration-border-subtle underline-offset-4 transition-colors hover:text-text"
+              className="mt-5 inline-flex text-sm font-medium text-accent transition-colors hover:text-accent-hover"
             >
-              View experiment →
+              View experiment &rarr;
             </Link>
           </div>
-          <div className="rounded-lg border border-border-subtle bg-bg-surface p-6">
-            <div className="mb-2 font-mono text-xs text-live">● Local demo</div>
-            <h3 className="mb-2 text-lg font-medium">Stack Demo App</h3>
+          <div className="group rounded-2xl border border-border-subtle bg-bg-surface p-8 transition-all hover:border-accent/30 hover:shadow-[0_0_0_1px_rgba(37,99,235,0.1)]">
+            <div className="mb-3 inline-flex items-center gap-2 font-mono text-xs font-medium text-accent">
+              <span className="inline-block h-2 w-2 rounded-full bg-accent" />
+              Local demo
+            </div>
+            <h3 className="heading-md mb-3">Stack Demo App</h3>
             <p className="text-base leading-relaxed text-text-muted">
               A compact ticket-board spike used to demonstrate App Router
               structure, Server Actions, and SQLite-backed persistence without
@@ -118,19 +133,24 @@ export default function Home() {
             </p>
             <Link
               href="/experiments/stack-demo-app"
-              className="mt-4 inline-flex text-sm text-text-muted underline decoration-border-subtle underline-offset-4 transition-colors hover:text-text"
+              className="mt-5 inline-flex text-sm font-medium text-accent transition-colors hover:text-accent-hover"
             >
-              View experiment →
+              View experiment &rarr;
             </Link>
           </div>
         </div>
       </section>
 
-      <section className="border-t border-border-subtle py-20">
-        <h2 className="mb-12 font-mono text-xs tracking-widest text-text-faint uppercase">
-          Tech I work with
+      <div className="divider">* * *</div>
+
+      {/* Tech */}
+      <section className="py-16 md:py-24">
+        <p className="kicker mb-4">Tech I work with</p>
+        <h2 className="heading-lg mb-12">
+          Full-stack, from <span className="text-accent">infrastructure</span>{" "}
+          to <span className="text-highlight">interface.</span>
         </h2>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-3">
           {[
             "NextJS",
             "React",
@@ -153,7 +173,7 @@ export default function Home() {
           ].map((tech) => (
             <span
               key={tech}
-              className="rounded-full border border-border-subtle px-3 py-1 font-mono text-xs text-text-muted"
+              className="rounded-full border border-border-subtle bg-bg-surface px-4 py-2 font-mono text-sm text-text-muted transition-colors hover:border-accent/30 hover:text-accent"
             >
               {tech}
             </span>
