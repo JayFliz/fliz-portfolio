@@ -64,6 +64,17 @@ export const experiments: Experiment[] = [
     externalUrl: "/experiments/warrior-programme/vimeo-links.html",
   },
   {
+    slug: "biz-workflow",
+    title: "Business Workflow Mapper",
+    description:
+      "A sketchpad for mapping business processes — define steps with SLOs, decisions with branching, and generate process documentation from a shared activity catalogue.",
+    status: "live",
+    tags: ["React", "TypeScript", "Process Design", "Vercel"],
+    date: "2026-09-04",
+    externalUrl: "https://biz-workflow.vercel.app/",
+    image: "/experiments/biz-workflow.png",
+  },
+  {
     slug: "dataflow-engine",
     title: "Dataflow Engine",
     description:
