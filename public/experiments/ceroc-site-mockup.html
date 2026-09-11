@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ceroc — Learn to dance. No partner needed.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --orange:#F08A00;
+    --orange-dark:#D67A00;
+    --orange-soft:#FFF3E2;
+    --plum:#241A2E;
+    --plum-mid:#372A44;
+    --ink:#2A2530;
+    --grey-warm:#F7F5F2;
+    --grey-line:#E8E4DE;
+    --grey-text:#6E6876;
+    --white:#FFFFFF;
+    --radius:14px;
+    --shadow:0 10px 30px rgba(36,26,46,.10);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto} *{transition:none!important;animation:none!important}}
+  body{
+    font-family:'Bricolage Grotesque',system-ui,sans-serif;
+    color:var(--ink);
+    background:var(--white);
+    line-height:1.55;
+    font-size:16px;
+  }
+  a{color:inherit;text-decoration:none}
+  a:focus-visible,button:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+  img{max-width:100%}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+
+  /* ---------- header ---------- */
+  .topbar{background:var(--plum);color:#D9CFE4;font-size:13px}
+  .topbar .wrap{display:flex;justify-content:space-between;align-items:center;height:34px}
+  .topbar a:hover{color:#fff}
+  header.site{
+    position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--grey-line);
+  }
+  header.site .wrap{display:flex;align-items:center;gap:32px;height:72px}
+  .logo{font-weight:800;font-size:28px;letter-spacing:-.03em;display:flex;align-items:baseline}
+  .logo em{font-style:normal;color:var(--orange)}
+  nav.main{display:flex;gap:26px;font-weight:600;font-size:15px;margin-left:8px}
+  nav.main a{padding:6px 2px;border-bottom:2px solid transparent}
+  nav.main a:hover,nav.main a[aria-current]{border-bottom-color:var(--orange)}
+  .head-actions{margin-left:auto;display:flex;align-items:center;gap:14px}
+  .basket{position:relative;font-size:20px}
+  .basket span{
+    position:absolute;top:-6px;right:-10px;background:var(--orange);color:#fff;
+    font-size:11px;font-weight:700;border-radius:99px;padding:1px 6px;
+  }
+  .btn{
+    display:inline-block;background:var(--orange);color:#fff;font-weight:700;
+    border:none;cursor:pointer;font-family:inherit;font-size:15px;
+    padding:11px 22px;border-radius:99px;transition:background .15s;
+  }
+  .btn:hover{background:var(--orange-dark)}
+  .btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--grey-line);padding:9px 20px}
+  .btn.ghost:hover{border-color:var(--orange);color:var(--orange);background:transparent}
+  .btn.dark{background:var(--plum)}
+  .btn.dark:hover{background:var(--plum-mid)}
+
+  /* ---------- hero ---------- */
+  .hero{padding:76px 0 0}
+  .hero .wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center}
+  .hero h1{
+    font-size:clamp(40px,5.5vw,68px);font-weight:800;line-height:1.02;
+    letter-spacing:-.035em;margin-bottom:20px;
+  }
+  .hero p.lede{font-size:19px;color:var(--grey-text);max-width:32em;margin-bottom:32px}
+  .hero-visual{position:relative;min-height:380px;overflow:hidden}
+  .hero-visual .disc{
+    position:absolute;border-radius:50%;
+  }
+  .disc.a{width:340px;height:340px;background:var(--plum);right:0;top:10px;
+    display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden}
+  .disc.a svg{width:78%;height:78%}
+  .disc.b{width:120px;height:120px;background:var(--orange);left:24px;bottom:10px}
+  .disc.c{width:64px;height:64px;border:3px solid var(--orange);right:-10px;bottom:60px;background:#fff}
+  .hero-stat{
+    position:absolute;left:0;top:40px;background:#fff;border:1px solid var(--grey-line);
+    border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;font-size:14px;
+  }
+  .hero-stat strong{display:block;font-size:24px;letter-spacing:-.02em}
+
+  /* ---------- class finder ---------- */
+  .finder{
+    background:#fff;border:1px solid var(--grey-line);border-top:4px solid var(--orange);
+    border-radius:18px;box-shadow:0 12px 40px rgba(36,26,46,.14);
+    padding:28px 28px 22px;margin-top:48px;margin-bottom:-40px;
+    position:relative;z-index:5;
+  }
+  .finder-row{display:grid;grid-template-columns:1.4fr 1fr 1fr auto;gap:12px;align-items:end}
+  .field label{display:block;font-size:13px;font-weight:600;color:var(--grey-text);margin-bottom:6px}
+  .field input,.field select{
+    width:100%;font-family:inherit;font-size:15px;padding:12px 14px;
+    border:1.5px solid var(--grey-line);border-radius:10px;background:#fff;color:var(--ink);
+  }
+  .field input:focus,.field select:focus{outline:none;border-color:var(--orange)}
+  .finder .btn{padding:13px 30px;font-size:16px}
+  .finder-hint{font-size:13px;color:var(--grey-text);margin-top:12px}
+  .finder-hint a{color:var(--orange);font-weight:600}
+
+  section{padding:88px 0}
+  .section-head{max-width:620px;margin-bottom:44px}
+  .section-head h2{font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:12px}
+  .section-head p{color:var(--grey-text);font-size:17px}
+  .grey{background:var(--grey-warm)}
+
+  /* ---------- steps ---------- */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;counter-reset:step}
+  .step{padding-top:18px;border-top:3px solid var(--grey-line);position:relative}
+  .step::before{
+    counter-increment:step;content:counter(step);
+    position:absolute;top:-19px;left:0;background:var(--orange);color:#fff;
+    width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:16px;
+  }
+  .step h3{font-size:19px;font-weight:700;margin:18px 0 8px}
+  .step p{color:var(--grey-text);font-size:15px}
+
+  /* ---------- events table (admin app echo) ---------- */
+  .events-toolbar{
+    display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:20px;
+  }
+  .chip{
+    font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;
+    border:1.5px solid var(--grey-line);background:#fff;border-radius:99px;padding:8px 16px;color:var(--ink);
+  }
+  .chip[aria-pressed="true"]{background:var(--plum);border-color:var(--plum);color:#fff}
+  .events-table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--grey-line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+  .events-table th{
+    text-align:left;font-size:13px;font-weight:700;color:var(--grey-text);
+    padding:14px 18px;border-bottom:1px solid var(--grey-line);background:#FBFAF8;
+  }
+  .events-table td{padding:17px 18px;border-bottom:1px solid var(--grey-line);font-size:15px;vertical-align:middle}
+  .events-table tr:last-child td{border-bottom:none}
+  .events-table tbody tr:hover{background:var(--orange-soft)}
+  .ev-name{font-weight:700}
+  .ev-venue a{color:var(--orange);font-weight:600}
+  .ev-venue a:hover{text-decoration:underline}
+  .tag{display:inline-block;font-size:12.5px;font-weight:700;border-radius:7px;padding:3px 9px}
+  .tag.class{background:var(--orange-soft);color:var(--orange-dark)}
+  .tag.freestyle{background:#EFE7F7;color:#6B3FA0}
+  .tag.workshop{background:#E4F2EA;color:#1E7A4C}
+  .seats{font-size:13px;color:var(--grey-text)}
+  .seats .bar{height:5px;border-radius:99px;background:var(--grey-line);margin-top:5px;width:90px;overflow:hidden}
+  .seats .bar i{display:block;height:100%;background:var(--orange);border-radius:99px}
+  .table-foot{display:flex;justify-content:space-between;align-items:center;margin-top:18px;font-size:14px;color:var(--grey-text)}
+
+  /* ---------- rewards (dark) ---------- */
+  .rewards{background:var(--plum);color:#fff;position:relative;overflow:hidden}
+  .rewards .section-head h2{color:#fff}
+  .rewards .section-head p{color:#B9AECB}
+  .rewards-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+  .earn-list{list-style:none;display:flex;flex-direction:column;gap:0;margin-top:8px}
+  .earn-list li{
+    display:flex;align-items:center;gap:16px;padding:16px 0;
+    border-bottom:1px solid rgba(255,255,255,.12);font-size:16px;
+  }
+  .earn-list li:last-child{border-bottom:none}
+  .pts{
+    min-width:74px;text-align:center;background:var(--orange);color:#fff;
+    font-weight:800;border-radius:10px;padding:7px 0;font-size:15px;
+  }
+  .pts.bonus{background:transparent;border:2px solid var(--orange);color:var(--orange)}
+  .member-card{
+    background:linear-gradient(135deg,#FF9D1F 0%,var(--orange) 45%,#C96A00 100%);
+    border-radius:22px;padding:28px;color:#fff;max-width:420px;
+    box-shadow:0 30px 60px rgba(0,0,0,.45);
+    transform:rotate(-3deg);margin:0 auto;
+  }
+  .member-card .mc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:34px}
+  .member-card .mc-logo{font-weight:800;font-size:24px;letter-spacing:-.02em}
+  .member-card .mc-tier{font-size:13px;font-weight:700;background:rgba(255,255,255,.22);padding:5px 12px;border-radius:99px}
+  .member-card .mc-name{font-size:20px;font-weight:700}
+  .member-card .mc-no{font-size:14px;opacity:.85;margin-bottom:22px}
+  .member-card .mc-bottom{display:flex;justify-content:space-between;align-items:flex-end}
+  .member-card .mc-bal small{display:block;font-size:12.5px;opacity:.85;font-weight:600}
+  .member-card .mc-bal strong{font-size:32px;font-weight:800;letter-spacing:-.02em}
+  .qr{width:74px;height:74px;background:#fff;border-radius:12px;padding:8px}
+  .qr svg{width:100%;height:100%}
+  .card-caption{text-align:center;color:#B9AECB;font-size:14px;margin-top:34px;max-width:380px;margin-left:auto;margin-right:auto}
+
+  /* tiers */
+  .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:64px}
+  .tier{
+    background:var(--plum-mid);border-radius:var(--radius);padding:26px;
+    border:1px solid rgba(255,255,255,.08);
+  }
+  .tier.gold{background:#fff;color:var(--ink);border:none}
+  .tier h3{font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px;margin-bottom:4px}
+  .tier .dot{width:14px;height:14px;border-radius:50%}
+  .tier .req{font-size:13.5px;color:#B9AECB;margin-bottom:16px;font-weight:600}
+  .tier.gold .req{color:var(--grey-text)}
+  .tier ul{list-style:none;font-size:14.5px;display:flex;flex-direction:column;gap:9px}
+  .tier ul li{padding-left:22px;position:relative}
+  .tier ul li::before{content:'✓';position:absolute;left:0;color:var(--orange);font-weight:800}
+  .tier .badge{float:right;font-size:12px;font-weight:800;background:var(--orange);color:#fff;border-radius:7px;padding:3px 9px}
+
+  /* ---------- dashboard preview ---------- */
+  .dash-shell{
+    background:#fff;border:1px solid var(--grey-line);border-radius:18px;
+    box-shadow:var(--shadow);overflow:hidden;
+  }
+  .dash-top{
+    display:flex;align-items:center;gap:14px;padding:16px 22px;
+    border-bottom:1px solid var(--grey-line);background:#FBFAF8;font-size:14px;
+  }
+  .avatar{width:38px;height:38px;border-radius:50%;background:var(--plum);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+  .dash-top .who strong{display:block;font-size:15px}
+  .dash-top .who span{color:var(--grey-text);font-size:13px}
+  .dash-top .dash-pts{margin-left:auto;background:var(--orange-soft);color:var(--orange-dark);font-weight:700;border-radius:99px;padding:7px 16px;font-size:14px}
+  .dash-tabs{display:flex;border-bottom:1px solid var(--grey-line);padding:0 22px;gap:6px}
+  .dash-tabs button{
+    font-family:inherit;font-size:15px;font-weight:600;color:var(--grey-text);
+    background:none;border:none;cursor:pointer;padding:15px 16px;
+    border-bottom:3px solid transparent;margin-bottom:-1px;
+  }
+  .dash-tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--orange)}
+  .dash-panel{padding:26px 22px;display:none}
+  .dash-panel.active{display:block}
+  .booking{
+    display:grid;grid-template-columns:78px 1fr auto;gap:18px;align-items:center;
+    padding:16px;border:1px solid var(--grey-line);border-radius:12px;margin-bottom:12px;
+  }
+  .booking .date{
+    text-align:center;background:var(--grey-warm);border-radius:10px;padding:10px 6px;
+  }
+  .booking .date strong{display:block;font-size:22px;line-height:1;letter-spacing:-.02em}
+  .booking .date span{font-size:12.5px;font-weight:700;color:var(--grey-text)}
+  .booking h4{font-size:16px;font-weight:700}
+  .booking p{font-size:13.5px;color:var(--grey-text)}
+  .booking .status{font-size:12.5px;font-weight:700;border-radius:7px;padding:3px 9px;display:inline-block;margin-top:5px}
+  .status.paid{background:#E4F2EA;color:#1E7A4C}
+  .status.due{background:#FDECEC;color:#C0392B}
+  .booking .acts{display:flex;gap:8px}
+  .icon-btn{
+    width:36px;height:36px;border-radius:9px;border:1.5px solid var(--grey-line);
+    background:#fff;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;
+  }
+  .icon-btn:hover{border-color:var(--orange)}
+  .wallet-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .wallet-box{border:1px solid var(--grey-line);border-radius:12px;padding:20px}
+  .wallet-box h4{font-size:15px;font-weight:700;margin-bottom:4px}
+  .wallet-box .big{font-size:30px;font-weight:800;letter-spacing:-.02em}
+  .wallet-box p{font-size:13.5px;color:var(--grey-text)}
+  .mini-643{
+    background:var(--plum);color:#fff;border-radius:12px;padding:18px;margin-top:14px;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .mini-643 strong{font-size:17px}
+  .mini-643 small{display:block;opacity:.75;font-size:12.5px;margin-top:2px}
+  .punches{display:flex;gap:6px}
+  .punch{width:22px;height:22px;border-radius:50%;border:2px solid var(--orange)}
+  .punch.used{background:var(--orange)}
+  .details-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;font-size:14.5px}
+  .details-grid .drow{border-bottom:1px solid var(--grey-line);padding:11px 0;display:flex;justify-content:space-between;gap:14px}
+  .details-grid .drow span{color:var(--grey-text)}
+  .details-grid .drow strong{font-weight:600;text-align:right}
+
+  /* ---------- cta band ---------- */
+  .cta-band{background:var(--orange);color:#fff;padding:70px 0}
+  .cta-band .wrap{display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap}
+  .cta-band h2{font-size:clamp(26px,3vw,38px);font-weight:800;letter-spacing:-.03em;max-width:18em}
+  .cta-band .btn{background:#fff;color:var(--orange-dark)}
+  .cta-band .btn:hover{background:var(--plum);color:#fff}
+
+  /* ---------- footer ---------- */
+  footer{background:var(--plum);color:#B9AECB;padding:64px 0 34px;font-size:14px}
+  .foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;margin-bottom:44px}
+  footer h5{color:#fff;font-size:15px;font-weight:700;margin-bottom:14px}
+  footer ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+  footer a:hover{color:#fff}
+  .foot-logo{font-weight:800;font-size:26px;color:#fff;margin-bottom:12px}
+  .foot-logo em{font-style:normal;color:var(--orange)}
+  .foot-base{border-top:1px solid rgba(255,255,255,.12);padding-top:22px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:13px}
+
+  /* ---------- spec tooltips ---------- */
+  .spec-toggle{
+    position:fixed;bottom:24px;right:24px;z-index:200;
+    background:var(--plum);color:#fff;font-family:inherit;font-weight:700;
+    font-size:14px;border:none;cursor:pointer;border-radius:99px;
+    padding:12px 20px;box-shadow:0 6px 24px rgba(36,26,46,.3);
+    display:flex;align-items:center;gap:8px;transition:background .15s;
+  }
+  .spec-toggle:hover{background:var(--plum-mid)}
+  .spec-toggle .dot-preview{
+    width:10px;height:10px;border-radius:50%;background:#2D7DD2;
+    animation:pulse-dot 2s infinite;
+  }
+  .spec-tip{
+    position:absolute;z-index:999;display:none;
+  }
+  body.show-specs .spec-tip{display:inline-flex}
+  .spec-tip .dot{
+    width:24px;height:24px;border-radius:50%;background:#2D7DD2;color:#fff;
+    font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;box-shadow:0 2px 8px rgba(45,125,210,.4);
+    animation:pulse-dot 2s infinite;position:relative;
+  }
+  @keyframes pulse-dot{
+    0%,100%{box-shadow:0 0 0 0 rgba(45,125,210,.5)}
+    50%{box-shadow:0 0 0 8px rgba(45,125,210,0)}
+  }
+  .spec-tip .card{
+    display:none;position:absolute;bottom:calc(100% + 10px);left:50%;
+    transform:translateX(-50%);width:300px;z-index:1000;
+    background:var(--plum);color:#fff;border-radius:12px;
+    padding:14px 16px;font-size:13px;line-height:1.5;
+    box-shadow:0 12px 36px rgba(36,26,46,.35);pointer-events:none;
+  }
+  .spec-tip:hover .card,.spec-tip:focus-within .card{display:block;pointer-events:auto}
+  .spec-tip .card::after{
+    content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);
+    border:7px solid transparent;border-top-color:var(--plum);
+  }
+  .spec-tip .card strong{display:block;color:var(--orange);font-size:12px;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+  .spec-tip .card.right{left:auto;right:0;transform:none}
+  .spec-tip .card.right::after{left:auto;right:10px;transform:none}
+  .spec-tip .card.left{left:0;transform:none}
+  .spec-tip .card.left::after{left:10px;transform:none}
+  .spec-tip .card.below{bottom:auto;top:calc(100% + 10px)}
+  .spec-tip .card.below::after{top:auto;bottom:100%;border-top-color:transparent;border-bottom-color:var(--plum)}
+  .spec-float{position:fixed;z-index:9999}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:920px){
+    .hero .wrap{grid-template-columns:1fr}
+    .hero-visual{display:none}
+    .finder{margin-top:32px;margin-bottom:-32px}
+    .finder-row{grid-template-columns:1fr 1fr}
+    .steps,.tiers{grid-template-columns:1fr}
+    .rewards-grid{grid-template-columns:1fr}
+    .foot-grid{grid-template-columns:1fr 1fr}
+    .events-table th:nth-child(5),.events-table td:nth-child(5){display:none}
+    .wallet-grid,.details-grid{grid-template-columns:1fr}
+    nav.main{display:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- topbar -->
+<div class="topbar">
+  <div class="wrap">
+    <div>Over 100 venues across the UK, Australia &amp; NZ</div>
+    <div style="display:flex;gap:18px">
+      <a href="#">Ceroc Escapes</a>
+      <a href="#">Franchise with us</a>
+      <a href="#">Help</a>
+    </div>
+  </div>
+</div>
+
+<!-- header -->
+<header class="site">
+  <div class="wrap">
+    <a class="logo" href="#">Ceroc<em>.</em></a>
+    <nav class="main" aria-label="Primary">
+      <a href="#find" aria-current="page">Find a class</a>
+      <a href="#events">What's on</a>
+      <a href="#rewards">Rewards</a>
+      <a href="#dashboard">My Ceroc</a>
+    </nav>
+    <div class="head-actions">
+      <a class="basket" href="#" aria-label="Basket, 1 item">🛒<span>1</span></a>
+      <a class="btn ghost" href="#dashboard">Sign in</a>
+      <a class="btn" href="#find">Book your first night</a>
+    </div>
+  </div>
+</header>
+
+<!-- hero -->
+<section class="hero" id="find">
+  <div class="wrap">
+    <div>
+      <h1>Learn to dance.<br>No partner needed.</h1>
+      <p class="lede">Ceroc is the easiest partner dance to pick up — a fusion of jive and salsa taught in relaxed weekly classes. Turn up on your own, dance with everyone, leave grinning.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <a class="btn" href="#events">Find your nearest class</a>
+        <a class="btn ghost" href="#rewards">How rewards work</a>
+      </div>
+    </div>
+    <div class="hero-visual" aria-hidden="true">
+      <div class="disc a">
+        <svg viewBox="0 0 200 200" fill="none">
+          <circle cx="100" cy="100" r="96" stroke="#F08A00" stroke-width="2" stroke-dasharray="4 8"/>
+          <path d="M60 140 C 75 90, 125 110, 140 60" stroke="#F08A00" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="60" cy="140" r="9" fill="#fff"/>
+          <circle cx="140" cy="60" r="9" fill="#fff"/>
+          <path d="M50 80 C 80 60, 120 150, 150 120" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+        </svg>
+      </div>
+      <div class="disc b"></div>
+      <div class="disc c"></div>
+      <div class="hero-stat">
+        <strong>608</strong>
+        classes &amp; freestyles this month
+      </div>
+    </div>
+  </div>
+
+  <!-- class finder -->
+  <div class="wrap">
+    <div class="finder" role="search" aria-label="Find a class">
+      <div class="finder-row">
+        <div class="field">
+          <label for="f-loc">Town or postcode</label>
+          <input id="f-loc" type="text" placeholder="e.g. Nottingham or NG1" value="">
+        </div>
+        <div class="field">
+          <label for="f-day">Day</label>
+          <select id="f-day">
+            <option>Any day</option><option>Monday</option><option>Tuesday</option>
+            <option>Wednesday</option><option>Thursday</option><option>Friday</option>
+            <option>Saturday</option><option>Sunday</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-type">Event type</label>
+          <select id="f-type">
+            <option>All types</option><option>Regular class</option>
+            <option>Freestyle</option><option>Workshop</option>
+          </select>
+        </div>
+        <button class="btn" type="button">Search</button>
+      </div>
+      <p class="finder-hint">First time? Your first class night is <strong>free with a trial pass</strong> — <a href="#">claim yours</a>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- how it works -->
+<section class="grey" style="padding-top:100px">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Your first night, sorted</h2>
+      <p>Every class night follows the same friendly format — beginners are the heart of it, not an afterthought.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <h3>Beginner lesson, 45 minutes</h3>
+        <p>A taxi-rank rotation means you dance with everyone — no partner required, no experience assumed. Three moves per week, taught from scratch.</p>
+      </div>
+      <div class="step">
+        <h3>Freestyle practice</h3>
+        <p>Put the moves together to real music with dance helpers on the floor. This is where it clicks — usually somewhere around week three.</p>
+      </div>
+      <div class="step">
+        <h3>Scan in, earn points</h3>
+        <p>Check in with the QR code on your digital member card. Every night you dance earns Ceroc Rewards points towards free entry and more.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- events listing -->
+<section id="events">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>What's on near you</h2>
+      <p>Live listings straight from the venues — book ahead to guarantee your spot and skip the door queue.</p>
+    </div>
+    <div class="events-toolbar" role="group" aria-label="Filter events">
+      <button class="chip" aria-pressed="true">All</button>
+      <button class="chip" aria-pressed="false">Regular classes</button>
+      <button class="chip" aria-pressed="false">Freestyles</button>
+      <button class="chip" aria-pressed="false">Workshops</button>
+      <span style="margin-left:auto;font-size:14px;color:var(--grey-text)">Showing events within 25 miles of <strong style="color:var(--ink)">Nottingham</strong></span>
+    </div>
+    <table class="events-table">
+      <thead>
+        <tr>
+          <th>Event</th><th>Date</th><th>Time</th><th>Venue</th><th>Type</th><th>Availability</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="ev-name">Mondays @ Ceroc Nottingham</td>
+          <td>Mon 14 Sep</td><td>19:30</td>
+          <td class="ev-venue"><a href="#">Nottingham — Grange Hall</a></td>
+          <td><span class="tag class">Regular class</span></td>
+          <td class="seats">Plenty of space<div class="bar"><i style="width:22%"></i></div></td>
+          <td><a class="btn ghost" style="padding:7px 16px;font-size:14px" href="#">Book</a></td>
+        </tr>
+        <tr>
+          <td class="ev-name">Thursdays @ Ceroc Horndean</td>
+          <td>Thu 17 Sep</td><td>19:30</td>
+          <td class="ev-venue"><a href="#">Waterlooville — Barton Hall</a></td>
+          <td><span class="tag class">Regular class</span></td>
+          <td class="seats">Plenty of space<div class="bar"><i style="width:34%"></i></div></td>
+          <td><a class="btn ghost" style="padding:7px 16px;font-size:14px" href="#">Book</a></td>
+        </tr>
+        <tr>
+          <td class="ev-name">Autumn Freestyle @ Ceroc Leeds</td>
+          <td>Sat 19 Sep</td><td>20:00</td>
+          <td class="ev-venue"><a href="#">Leeds — St Chads</a></td>
+          <td><span class="tag freestyle">Freestyle</span></td>
+          <td class="seats">Selling fast<div class="bar"><i style="width:81%"></i></div></td>
+          <td><a class="btn" style="padding:7px 16px;font-size:14px" href="#">Book</a></td>
+        </tr>
+        <tr>
+          <td class="ev-name">Mondays @ Ceroc Leeds</td>
+          <td>Mon 21 Sep</td><td>19:30</td>
+          <td class="ev-venue"><a href="#">Leeds — St Chads</a></td>
+          <td><span class="tag class">Regular class</span></td>
+          <td class="seats">Plenty of space<div class="bar"><i style="width:18%"></i></div></td>
+          <td><a class="btn ghost" style="padding:7px 16px;font-size:14px" href="#">Book</a></td>
+        </tr>
+        <tr>
+          <td class="ev-name">Dips &amp; Drops Workshop</td>
+          <td>Sun 27 Sep</td><td>14:00</td>
+          <td class="ev-venue"><a href="#">Nottingham — Grange Hall</a></td>
+          <td><span class="tag workshop">Workshop</span></td>
+          <td class="seats">12 places left<div class="bar"><i style="width:64%"></i></div></td>
+          <td><a class="btn ghost" style="padding:7px 16px;font-size:14px" href="#">Book</a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-foot">
+      <span>Showing 5 of 608 upcoming events</span>
+      <a href="#" style="color:var(--orange);font-weight:700">View all events</a>
+    </div>
+  </div>
+</section>
+<!-- rewards -->
+<section class="rewards" id="rewards">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Ceroc Rewards</h2>
+      <p>The more you dance, the further your money goes. Points land automatically when your QR code is scanned at the door — no stamps, no faff.</p>
+    </div>
+    <div class="rewards-grid">
+      <div>
+        <ul class="earn-list">
+          <li><span class="pts">+10</span> Every regular class night you attend</li>
+          <li><span class="pts">+25</span> Every freestyle or party night</li>
+          <li><span class="pts">+40</span> Workshops and skills days</li>
+          <li><span class="pts bonus">+50</span> Bring a friend to their first night</li>
+          <li><span class="pts bonus">+30</span> Dance in your birthday week</li>
+          <li><span class="pts bonus">2×</span> Double points on 4-week streaks</li>
+        </ul>
+        <p style="margin-top:22px;color:#B9AECB;font-size:15px">
+          <strong style="color:#fff">100 points = £5 wallet credit</strong>, redeemable against any class, freestyle or workshop — or save up towards a Ceroc Escapes weekender.
+        </p>
+      </div>
+      <div>
+        <div class="member-card">
+          <div class="mc-top">
+            <span class="mc-logo">Ceroc<span style="color:#fff">.</span></span>
+            <span class="mc-tier">In the Groove</span>
+          </div>
+          <div class="mc-name">Pauline Fleetwood</div>
+          <div class="mc-no">Member 62817 &nbsp;—&nbsp; East Midlands</div>
+          <div class="mc-bottom">
+            <div class="mc-bal">
+              <small>Points balance</small>
+              <strong>1,240</strong>
+            </div>
+            <div class="qr" aria-label="Check-in QR code">
+              <svg viewBox="0 0 25 25" shape-rendering="crispEdges" fill="#241A2E">
+                <rect x="0" y="0" width="7" height="7"/><rect x="2" y="2" width="3" height="3" fill="#fff"/>
+                <rect x="18" y="0" width="7" height="7"/><rect x="20" y="2" width="3" height="3" fill="#fff"/>
+                <rect x="0" y="18" width="7" height="7"/><rect x="2" y="20" width="3" height="3" fill="#fff"/>
+                <rect x="9" y="1" width="2" height="2"/><rect x="13" y="0" width="2" height="3"/>
+                <rect x="10" y="5" width="3" height="2"/><rect x="15" y="4" width="1" height="3"/>
+                <rect x="1" y="9" width="2" height="2"/><rect x="4" y="10" width="3" height="2"/>
+                <rect x="8" y="9" width="3" height="3"/><rect x="13" y="10" width="2" height="2"/>
+                <rect x="17" y="9" width="2" height="3"/><rect x="21" y="10" width="3" height="2"/>
+                <rect x="9" y="14" width="2" height="3"/><rect x="13" y="14" width="3" height="2"/>
+                <rect x="18" y="14" width="2" height="2"/><rect x="22" y="15" width="2" height="2"/>
+                <rect x="1" y="14" width="3" height="2"/><rect x="5" y="15" width="2" height="2"/>
+                <rect x="9" y="19" width="3" height="2"/><rect x="14" y="18" width="2" height="3"/>
+                <rect x="18" y="19" width="3" height="3"/><rect x="22" y="22" width="2" height="2"/>
+                <rect x="10" y="23" width="2" height="2"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <p class="card-caption">Your digital member card lives in My Ceroc — scan it at any venue to check in, earn points and use your 6-4-3 entries.</p>
+      </div>
+    </div>
+
+    <div class="tiers">
+      <div class="tier">
+        <h3><span class="dot" style="background:#B87E4B"></span>First Moves</h3>
+        <p class="req">0 – 499 points</p>
+        <ul>
+          <li>Earn points every time you dance</li>
+          <li>Free entry on your birthday week</li>
+          <li>Member pricing on all class nights</li>
+        </ul>
+      </div>
+      <div class="tier">
+        <h3><span class="dot" style="background:#B9C2CC"></span>In the Groove</h3>
+        <p class="req">500 – 1,999 points</p>
+        <ul>
+          <li>Everything in First Moves</li>
+          <li>Priority booking on freestyles</li>
+          <li>1 guest pass per quarter</li>
+          <li>10% off workshops</li>
+        </ul>
+      </div>
+      <div class="tier gold">
+        <h3><span class="dot" style="background:var(--orange)"></span>Dance Legend <span class="badge">Top tier</span></h3>
+        <p class="req">2,000+ points in a year</p>
+        <ul>
+          <li>Everything in In the Groove</li>
+          <li>1 free freestyle every month</li>
+          <li>Early access to Ceroc Escapes</li>
+          <li>£25 annual wallet credit</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- dashboard preview -->
+<section class="grey" id="dashboard">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>My Ceroc — everything in one place</h2>
+      <p>Bookings, details and your wallet, all self-serve. Sign in once and your member card, credit and points travel with you to every venue.</p>
+    </div>
+    <div class="dash-shell" style="position:relative">
+      <div class="dash-top" style="position:relative">
+        <div class="avatar">PF</div>
+        <div class="who">
+          <strong>Pauline Fleetwood</strong>
+          <span>Member since Nov 2008 — East Midlands</span>
+        </div>
+        <div class="dash-pts">1,240 pts — In the Groove</div>
+        <div class="spec-tip" style="top:-8px;left:4px"><div class="dot">13</div><div class="card left below"><strong>Spec: Surrounding Wrapper</strong>Header bar should include: access to basket, email message history, and sign out. Below the tabs, a "featured events" section is also required.</div></div>
+      </div>
+      <div class="dash-tabs" role="tablist" aria-label="Dashboard sections">
+        <button role="tab" aria-selected="true" data-panel="p-bookings">My Bookings</button>
+        <button role="tab" aria-selected="false" data-panel="p-wallet">My Wallet</button>
+        <button role="tab" aria-selected="false" data-panel="p-details">My Details</button>
+      </div>
+
+      <div class="dash-panel active" id="p-bookings" role="tabpanel" style="position:relative">
+        <div class="booking" style="position:relative">
+          <div class="date"><strong>19</strong><span>SEP</span></div>
+          <div>
+            <h4>Autumn Freestyle @ Ceroc Leeds</h4>
+            <p>Leeds — St Chads, 20:00 – 23:30 · 1 × entry, £14.00</p>
+            <span class="status paid">Paid</span>
+          </div>
+          <div class="acts" style="position:relative">
+            <button class="icon-btn" title="Show QR check-in code" aria-label="Show QR check-in code">▦</button>
+            <button class="icon-btn" title="Resend confirmation" aria-label="Resend confirmation">✉</button>
+            <button class="icon-btn" title="Cancel booking" aria-label="Cancel booking">✕</button>
+            <div class="spec-tip" style="top:-12px;right:-14px"><div class="dot">5</div><div class="card right"><strong>Spec: Booking Actions</strong>Each booking provides: Show personal QR check-in code for entry · Re-send email confirmation · Cancel booking · Make a payment · Make an enquiry · View full event details.</div></div>
+          </div>
+          <div class="spec-tip" style="top:-12px;left:90px"><div class="dot">4</div><div class="card left below"><strong>Spec: My Bookings</strong>List all upcoming bookings, sortable by date booked or event date. Include date, location, what was purchased, cost &amp; payments made.</div></div>
+        </div>
+        <div class="booking" style="position:relative">
+          <div class="date"><strong>27</strong><span>SEP</span></div>
+          <div>
+            <h4>Dips &amp; Drops Workshop</h4>
+            <p>Nottingham — Grange Hall, 14:00 – 17:00 · 1 × workshop place, £28.00</p>
+            <span class="status due">Payment due — £14.00 balance</span>
+            <div class="spec-tip" style="bottom:-6px;left:220px"><div class="dot">6</div><div class="card left"><strong>Spec: Payment Alerts</strong>Highlight where events have been cancelled, or payments are due or overdue.</div></div>
+          </div>
+          <div class="acts">
+            <button class="icon-btn" title="Make a payment" aria-label="Make a payment">£</button>
+            <button class="icon-btn" title="Make an enquiry" aria-label="Make an enquiry">?</button>
+            <button class="icon-btn" title="Cancel booking" aria-label="Cancel booking">✕</button>
+          </div>
+        </div>
+        <p style="font-size:14px;color:var(--grey-text);margin-top:16px;position:relative;display:inline-block">
+          <a href="#" style="color:var(--orange);font-weight:700">View past bookings</a> · <a href="#" style="color:var(--orange);font-weight:700">Favourited events (3)</a>
+          <span class="spec-tip" style="top:-14px;right:-30px"><span class="dot">7</span><span class="card right"><strong>Spec: History &amp; Favourites</strong>View historic bookings in paged or load-on-demand fashion. List favourited events with "book now" link and facility to remove from list.</span></span>
+        </p>
+      </div>
+
+      <div class="dash-panel" id="p-wallet" role="tabpanel" style="position:relative">
+        <div class="wallet-grid">
+          <div class="wallet-box" style="position:relative">
+            <h4>Wallet balance</h4>
+            <div class="big">£11.50</div>
+            <p>Includes £5.00 credit note issued by East Midlands, expires 12 Mar 2027.</p>
+            <div class="spec-tip" style="top:-12px;right:-12px"><div class="dot">8</div><div class="card right"><strong>Spec: Credits &amp; Vouchers</strong>Display current wallet balance. Show credit notes including issuing territory, issue date, and expiry date.</div></div>
+          </div>
+          <div class="wallet-box">
+            <h4>Rewards points</h4>
+            <div class="big">1,240 pts</div>
+            <p>760 points until Dance Legend. <a href="#" style="color:var(--orange);font-weight:700">Convert 1,200 pts to £60 credit</a></p>
+          </div>
+        </div>
+        <div class="mini-643" style="position:relative">
+          <div>
+            <strong>6-4-3 Entry Card</strong>
+            <small>Activated 02 Aug 2026 · 4 of 6 entries used</small>
+          </div>
+          <div class="punches" aria-label="4 of 6 entries used">
+            <span class="punch used"></span><span class="punch used"></span><span class="punch used"></span>
+            <span class="punch used"></span><span class="punch"></span><span class="punch"></span>
+          </div>
+          <div class="spec-tip" style="top:-14px;right:8px"><div class="dot">9</div><div class="card right"><strong>Spec: Digital Ceroc Cards</strong>Display card visual for 6-4-3, student discount, etc. Show date activated, any expiry, and usage so far.</div></div>
+        </div>
+        <div class="wallet-box" style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;position:relative">
+          <div>
+            <h4>Visa ending 4417</h4>
+            <p>Expires 09/28</p>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn ghost" style="padding:8px 16px;font-size:14px">Remove</button>
+            <button class="btn dark" style="padding:8px 16px;font-size:14px">Add a card</button>
+          </div>
+          <div class="spec-tip" style="top:-14px;right:-12px"><div class="dot">10</div><div class="card right"><strong>Spec: Payment Cards</strong>Display stored card details (last 4 digits, expiry). Provide facility to remove a card and add a new card.</div></div>
+        </div>
+      </div>
+
+      <div class="dash-panel" id="p-details" role="tabpanel" style="position:relative">
+        <div class="details-grid" style="position:relative">
+          <div class="drow"><span>Name</span><strong>Pauline Fleetwood</strong></div>
+          <div class="drow"><span>Member card</span><strong>62817 (East Midlands)</strong></div>
+          <div class="drow"><span>Email</span><strong>pauline.f@example.com</strong></div>
+          <div class="drow"><span>Join date</span><strong>11 Nov 2008</strong></div>
+          <div class="drow"><span>Phone</span><strong>07700 900123</strong></div>
+          <div class="drow"><span>Dance position</span><strong>Follow</strong></div>
+          <div class="drow"><span>Home venue</span><strong>Nottingham — Grange Hall</strong></div>
+          <div class="drow"><span>Referred by</span><strong>M. Sutcliffe</strong></div>
+          <div class="spec-tip" style="top:-14px;right:-14px"><div class="dot">11</div><div class="card right"><strong>Spec: Personal Details</strong>Editable: Name, DOB, Address, Email (OTP), Phone (OTP), Profile picture, Password, Favourite territory, Occupation, How heard about Ceroc, Dance position. View-only: Join date, Member card numbers, Primary territory, Referring member.</div></div>
+        </div>
+        <p style="font-size:13.5px;color:var(--grey-text);margin-top:16px;position:relative;display:inline-block">Email and phone changes are confirmed with a one-time passcode before they take effect. <a href="#" style="color:var(--orange);font-weight:700">Edit details</a> · <a href="#" style="color:var(--orange);font-weight:700">Marketing preferences</a>
+          <span class="spec-tip" style="top:-14px;right:-30px"><span class="dot">12</span><span class="card right"><strong>Spec: OTP &amp; Preferences</strong>Email and phone changes require OTP validation &amp; forced confirmation before update. Marketing preferences management as per standalone service.</span></span>
+        </p>
+      </div>
+    </div>
+    <div style="position:relative;margin-top:24px;display:inline-block">
+      <div class="spec-tip" style="top:0;left:0;position:relative"><div class="dot">14</div><div class="card left below" style="width:340px"><strong>Spec: Future Development</strong>Dashboard must later support: Friends (link with members, see their events, chat online) · Social Profile · Ceroc Escapes (group bookings, accommodation management, upgrades, tickets, menu choices, parking) · Competition events.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- cta -->
+<section class="cta-band">
+  <div class="wrap">
+    <h2>Your first class night is on us. All you have to do is turn up.</h2>
+    <a class="btn" href="#find">Claim your free trial pass</a>
+  </div>
+</section>
+
+<!-- footer -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="foot-logo">Ceroc<em>.</em></div>
+        <p>The UK's biggest modern jive organisation. Teaching the nation to dance since 1980 — over 20 million dances and counting.</p>
+      </div>
+      <div>
+        <h5>Dance</h5>
+        <ul>
+          <li><a href="#find">Find a class</a></li>
+          <li><a href="#events">What's on</a></li>
+          <li><a href="#">Freestyles</a></li>
+          <li><a href="#">Workshops</a></li>
+          <li><a href="#">Ceroc Escapes</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Members</h5>
+        <ul>
+          <li><a href="#dashboard">My Ceroc</a></li>
+          <li><a href="#rewards">Ceroc Rewards</a></li>
+          <li><a href="#">Gift vouchers</a></li>
+          <li><a href="#">Refer a friend</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Ceroc</h5>
+        <ul>
+          <li><a href="#">About us</a></li>
+          <li><a href="#">Franchise opportunities</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Privacy &amp; terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-base">
+      <span>© 2026 Ceroc Enterprises Ltd. Ceroc is a registered trademark.</span>
+      <span>Built on WordPress · Powered by the Ceroc Admin API</span>
+    </div>
+  </div>
+</footer>
+
+<!-- floating spec tooltips (outside overflow containers) -->
+<div class="spec-tip spec-float" id="ft1" data-target=".basket"><div class="dot">1</div><div class="card right below"><strong>Spec: Surrounding Wrapper</strong>Access to current basket — visible from header at all times.</div></div>
+<div class="spec-tip spec-float" id="ft2" data-target=".head-actions .btn.ghost"><div class="dot">2</div><div class="card right below"><strong>Spec: Surrounding Wrapper</strong>Sign out functionality. Also requires access to email message history from the header.</div></div>
+<div class="spec-tip spec-float" id="ft3" data-target=".dash-tabs"><div class="dot">3</div><div class="card right"><strong>Spec: Phase I Tabs</strong>Phase I dashboard has three tabs: My Bookings (default), My Details, and My Wallet. Design should allow for future tabs: Friends, Membership, Social Profile.</div></div>
+
+<!-- spec tooltip toggle -->
+<button class="spec-toggle" id="specToggle" type="button">
+  <span class="dot-preview"></span> Show spec annotations
+</button>
+
+<script>
+  // Spec tooltip toggle
+  const specBtn = document.getElementById('specToggle');
+  specBtn.addEventListener('click', () => {
+    document.body.classList.toggle('show-specs');
+    const on = document.body.classList.contains('show-specs');
+    specBtn.innerHTML = on
+      ? '<span class="dot-preview"></span> Hide spec annotations'
+      : '<span class="dot-preview"></span> Show spec annotations';
+  });
+
+  // Position floating spec tooltips relative to their targets
+  function positionFloats() {
+    document.querySelectorAll('.spec-float').forEach(tip => {
+      const sel = tip.dataset.target;
+      const el = document.querySelector(sel);
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      tip.style.top = (r.top - 8) + 'px';
+      tip.style.left = (r.right + 8) + 'px';
+    });
+  }
+  positionFloats();
+  window.addEventListener('scroll', positionFloats, {passive:true});
+  window.addEventListener('resize', positionFloats);
+
+  // Dashboard tab switching
+  document.querySelectorAll('.dash-tabs [role="tab"]').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.dash-tabs [role="tab"]').forEach(t => t.setAttribute('aria-selected','false'));
+      document.querySelectorAll('.dash-panel').forEach(p => p.classList.remove('active'));
+      tab.setAttribute('aria-selected','true');
+      document.getElementById(tab.dataset.panel).classList.add('active');
+    });
+  });
+  // Event filter chips (visual only in mockup)
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed','false'));
+      chip.setAttribute('aria-pressed','true');
+    });
+  });
+</script>
+</body>
+</html>
