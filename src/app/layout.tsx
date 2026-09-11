@@ -18,26 +18,20 @@ export const metadata: Metadata = {
 
 function Nav() {
   return (
-    <nav className="border-b border-border">
-      <div className="mx-auto flex max-w-[80rem] items-center justify-between px-6 py-5 md:px-10">
-        <Link
-          href="/"
-          className="font-display text-2xl font-black tracking-tight text-text transition-colors hover:text-text-muted md:text-3xl"
-        >
+    <nav className="nav-bar">
+      <div className="nav-inner">
+        <Link href="/" className="nav-logo">
           Jay Greasley
         </Link>
-        <div className="flex items-center gap-8">
-          <Link
-            href="/experiments"
-            className="text-sm font-semibold uppercase tracking-widest text-text transition-colors hover:text-accent-hover"
-          >
+        <div className="nav-links">
+          <Link href="/experiments" className="nav-link">
             Experiments
           </Link>
           <a
             href="https://linkedin.com/in/jamesgreasley"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-semibold uppercase tracking-widest text-text transition-colors hover:text-accent-hover"
+            className="nav-link"
           >
             LinkedIn
           </a>
@@ -45,7 +39,7 @@ function Nav() {
             href="https://github.com/JayFliz"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-semibold uppercase tracking-widest text-text transition-colors hover:text-accent-hover"
+            className="nav-link"
           >
             GitHub
           </a>
@@ -57,26 +51,23 @@ function Nav() {
 
 function Footer() {
   return (
-    <footer className="border-t border-border bg-bg-dark text-text-inverse">
-      <div className="mx-auto flex max-w-[80rem] flex-col items-center gap-6 px-6 py-16 text-center md:flex-row md:justify-between md:px-10 md:text-left">
+    <footer className="site-footer">
+      <div className="footer-inner">
         <div>
-          <p className="font-display text-xl font-black">Jay Greasley</p>
-          <p className="mt-1 text-sm text-text-inverse/60">
+          <p className="footer-name">Jay Greasley</p>
+          <p className="footer-copy">
             &copy; {new Date().getFullYear()}
           </p>
         </div>
-        <div className="flex items-center gap-8">
-          <a
-            href="mailto:jay@fliz.co.uk"
-            className="text-sm font-medium uppercase tracking-widest text-text-inverse/60 transition-colors hover:text-accent"
-          >
+        <div className="footer-links">
+          <a href="mailto:jay@fliz.co.uk" className="footer-link">
             Email
           </a>
           <a
             href="https://linkedin.com/in/jamesgreasley"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-medium uppercase tracking-widest text-text-inverse/60 transition-colors hover:text-accent"
+            className="footer-link"
           >
             LinkedIn
           </a>
@@ -84,7 +75,7 @@ function Footer() {
             href="https://github.com/JayFliz"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-medium uppercase tracking-widest text-text-inverse/60 transition-colors hover:text-accent"
+            className="footer-link"
           >
             GitHub
           </a>
@@ -114,9 +105,11 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen">
-        <Nav />
-        <main>{children}</main>
-        <Footer />
+        <div className="page-wrap">
+          <Nav />
+          <main>{children}</main>
+          <Footer />
+        </div>
       </body>
     </html>
   );
