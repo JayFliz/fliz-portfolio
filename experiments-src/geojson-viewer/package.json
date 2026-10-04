@@ -1,0 +1,18 @@
+{
+  "name": "geojson-viewer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@turf/bbox": "^7.4.0",
+    "maplibre-gl": "^6.12.0"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "svelte": "^5.57.1",
+    "vite": "^8.3.0"
+  }
+}

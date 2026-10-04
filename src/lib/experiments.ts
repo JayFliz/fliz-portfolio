@@ -85,6 +85,26 @@ export const experiments: Experiment[] = [
     image: "/experiments/dataflow-ui.png",
   },
   {
+    slug: "mgrs-logger",
+    title: "MGRS Logger",
+    description:
+      "An installable phone web app that shows your live MGRS grid reference, marks waypoints, records tracks, and exports them as CSV or GeoJSON.",
+    status: "live",
+    tags: ["HTML", "PWA", "Geolocation", "MGRS", "GeoJSON"],
+    date: "2026-10-04",
+    externalUrl: "/experiments/mgrs/index.html",
+  },
+  {
+    slug: "geojson-viewer",
+    title: "GeoJSON Viewer",
+    description:
+      "Drop GeoJSON files onto a map to view them as layers, switch basemaps, and inspect feature properties. Pairs with the MGRS Logger's exports.",
+    status: "live",
+    tags: ["Svelte", "Vite", "MapLibre", "GeoJSON"],
+    date: "2026-10-04",
+    externalUrl: "/experiments/geojson-viewer/index.html",
+  },
+  {
     slug: "react-email",
     title: "React Email Templates",
     description:

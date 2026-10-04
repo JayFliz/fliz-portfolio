@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Standalone Vite experiments and their built output.
+    "experiments-src/**",
+    "public/experiments/geojson-viewer/**",
   ]),
 ]);
 
