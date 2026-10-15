@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0">
+  <head>
+    <title>UK Defence &amp; Security feeds</title>
+    <dateCreated>Thu, 15 Oct 2026 09:30:00 +0100</dateCreated>
+  </head>
+  <body>
+    <outline text="Independent UK defence news">
+      <outline type="rss" text="UK Defence Journal" title="UK Defence Journal" xmlUrl="https://ukdefencejournal.org.uk/feed/" htmlUrl="https://ukdefencejournal.org.uk"/>
+      <outline type="rss" text="Forces News – Army" title="Forces News – Army" xmlUrl="https://www.forcesnews.com/taxonomy/term/3/feed" htmlUrl="https://www.forcesnews.com/services/army"/>
+      <outline type="rss" text="Forces News – Navy" title="Forces News – Navy" xmlUrl="https://www.forcesnews.com/taxonomy/term/4/feed" htmlUrl="https://www.forcesnews.com/services/navy"/>
+      <outline type="rss" text="Navy Lookout" title="Navy Lookout" xmlUrl="https://www.navylookout.com/feed" htmlUrl="https://www.navylookout.com"/>
+      <outline type="rss" text="Defence Blog – UK" title="Defence Blog – UK" xmlUrl="https://www.defence-blog.com/topics/uk/feed" htmlUrl="https://www.defence-blog.com/topics/uk"/>
+    </outline>
+    <outline text="Think tanks &amp; analysis">
+      <outline type="rss" text="RUSI – What's New" title="RUSI – What's New" xmlUrl="https://www.rusi.org/rss/whats-new.xml" htmlUrl="https://www.rusi.org"/>
+      <outline type="rss" text="RUSI – Latest Publications" title="RUSI – Latest Publications" xmlUrl="https://www.rusi.org/rss/latest-publications.xml" htmlUrl="https://www.rusi.org/explore-our-research/publications"/>
+      <outline type="rss" text="Chatham House – Expert comment" title="Chatham House – Expert comment" xmlUrl="https://www.chathamhouse.org/path/83/feed.xml" htmlUrl="https://www.chathamhouse.org"/>
+      <outline type="rss" text="Wavell Room" title="Wavell Room" xmlUrl="https://wavellroom.com/feed/" htmlUrl="https://wavellroom.com"/>
+      <outline type="rss" text="Think Defence" title="Think Defence" xmlUrl="https://www.thinkdefence.co.uk/feed/" htmlUrl="https://www.thinkdefence.co.uk"/>
+      <outline type="rss" text="Thin Pinstriped Line" title="Thin Pinstriped Line" xmlUrl="https://thinpinstripedline.blogspot.com/feeds/posts/default" htmlUrl="https://thinpinstripedline.blogspot.com"/>
+    </outline>
+    <outline text="Official (MOD / services)">
+      <outline type="rss" text="GOV.UK – MOD news &amp; communications" title="GOV.UK – MOD news &amp; communications" xmlUrl="https://www.gov.uk/search/news-and-communications.atom?organisations%5B%5D=ministry-of-defence" htmlUrl="https://www.gov.uk/government/organisations/ministry-of-defence"/>
+      <outline type="rss" text="GOV.UK – MOD all activity" title="GOV.UK – MOD all activity" xmlUrl="https://www.gov.uk/government/organisations/ministry-of-defence.atom" htmlUrl="https://www.gov.uk/government/organisations/ministry-of-defence"/>
+      <outline type="rss" text="GOV.UK – Defence Equipment &amp; Support" title="GOV.UK – Defence Equipment &amp; Support" xmlUrl="https://www.gov.uk/government/organisations/defence-equipment-and-support.atom" htmlUrl="https://www.gov.uk/government/organisations/defence-equipment-and-support"/>
+      <outline type="rss" text="GOV.UK – Dstl" title="GOV.UK – Dstl" xmlUrl="https://www.gov.uk/government/organisations/defence-science-and-technology-laboratory.atom" htmlUrl="https://www.gov.uk/government/organisations/defence-science-and-technology-laboratory"/>
+      <outline type="rss" text="RAF News" title="RAF News" xmlUrl="https://www.raf.mod.uk/news/articles/?rss=true" htmlUrl="https://www.raf.mod.uk/news/articles"/>
+    </outline>
+    <outline text="International trade press (UK-relevant)">
+      <outline type="rss" text="Naval News" title="Naval News" xmlUrl="https://www.navalnews.com/feed/" htmlUrl="https://www.navalnews.com"/>
+      <outline type="rss" text="Breaking Defense" title="Breaking Defense" xmlUrl="https://breakingdefense.com/feed/" htmlUrl="https://breakingdefense.com"/>
+    </outline>
+  </body>
+</opml>

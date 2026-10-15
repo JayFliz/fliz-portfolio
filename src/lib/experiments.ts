@@ -105,6 +105,15 @@ export const experiments: Experiment[] = [
     externalUrl: "/experiments/geojson-viewer/index.html",
   },
   {
+    slug: "rss-reader",
+    title: "Defence Feeds Reader",
+    description:
+      "A minimal OPML-driven RSS reader for UK defence and security news — feeds fetched server-side and refreshed every 30 minutes, with read state kept in the browser.",
+    status: "live",
+    tags: ["Next.js", "TypeScript", "RSS", "OPML", "ISR"],
+    date: "2026-10-15",
+  },
+  {
     slug: "react-email",
     title: "React Email Templates",
     description:

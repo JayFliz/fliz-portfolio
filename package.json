@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@revealjs/react": "^0.2.0",
+    "fast-xml-parser": "^5.11.2",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.38.0",
     "lz-string": "^1.5.0",
