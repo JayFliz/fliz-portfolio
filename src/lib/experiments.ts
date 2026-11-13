@@ -114,6 +114,16 @@ export const experiments: Experiment[] = [
     date: "2026-10-15",
   },
   {
+    slug: "outlook-check",
+    title: "Is It On Outlook?",
+    description:
+      "Enter an email address to see whether its domain is hosted on Microsoft 365 / Outlook, using MX and SPF lookups over DNS-over-HTTPS. Handy during a Microsoft outage.",
+    status: "live",
+    tags: ["HTML", "DNS", "Email", "Microsoft 365"],
+    date: "2026-11-13",
+    externalUrl: "/experiments/outlook-check/index.html",
+  },
+  {
     slug: "react-email",
     title: "React Email Templates",
     description:
